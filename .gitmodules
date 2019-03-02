@@ -1,0 +1,3 @@
+[submodule "tqueue"]
+	path = tqueue
+	url = https://github.com/HexDecimal/tqueue.git
