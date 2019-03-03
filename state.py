@@ -96,7 +96,7 @@ class Game(State):
         assert g.world.player
         player = g.world.player
         if event.sym in self.DIR_KEYS:
-            actions.Move(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
+            actions.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
         elif event.sym in self.WAIT_KEYS:
             actions.Wait(player).invoke()
         else:
