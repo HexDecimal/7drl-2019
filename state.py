@@ -42,6 +42,10 @@ class MainMenu(State):
 
 
 class Game(State):
+    WAIT_KEYS = (
+        tcod.event.K_PERIOD,
+        tcod.event.K_KP_5,
+    )
     DIR_KEYS = {
         tcod.event.K_LEFT: (-1, 0),
         tcod.event.K_RIGHT: (1, 0),
@@ -90,11 +94,11 @@ class Game(State):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         assert g.world.player
+        player = g.world.player
         if event.sym in self.DIR_KEYS:
-            actions.Move(
-                g.world.player,
-                (*self.DIR_KEYS[event.sym], 0),
-            ).invoke()
+            actions.Move(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
+        elif event.sym in self.WAIT_KEYS:
+            actions.Wait(player).invoke()
         else:
             print(event)
         g.world.simulate()

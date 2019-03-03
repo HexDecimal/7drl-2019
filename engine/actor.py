@@ -35,8 +35,12 @@ class Actor(engine.component.Component):
 
     def __call__(self, ticket: tqueue.Ticket) -> None:
         if self.ticket is ticket:
+            self.ticket = None
             self.act()
-            assert self.ticket is not ticket
+            assert self.ticket or self.is_player_controlled()
+
+    def is_player_controlled(self) -> bool:
+        return False
 
 
 class Player(Actor):
@@ -45,3 +49,6 @@ class Player(Actor):
         assert self.entity
         self.ticket = None
         self.world.player = self.entity
+
+    def is_player_controlled(self) -> bool:
+        return True
