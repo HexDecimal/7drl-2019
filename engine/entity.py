@@ -8,11 +8,11 @@ import engine.location
 class Entity:
     Actor: Any = engine.component.Null
     actor: Optional[engine.actor.Actor]
+    location: engine.location.Location
 
     def __init__(self, location: engine.location.Location) -> None:
-        self._location = location
         self._components: Dict[str, engine.component.Component] = {}
-        location.contents.append(self)
+        self.location = location
         self.actor = self.Actor()
 
     def destroy(self) -> None:
@@ -27,8 +27,6 @@ class Entity:
     ) -> None:
         if attr.startswith("_"):  # No special action for private attributes.
             return super().__setattr__(attr, value)
-        if attr == "location":
-            return super().__setattr__(attr, value)
         if attr in self._components:
             self._components[attr].on_remove(self)
             del self._components[attr]
@@ -41,23 +39,6 @@ class Entity:
             return self._components[attr]
         except KeyError:
             return None
-
-    @property
-    def location(self) -> engine.location.Location:
-        """Return the current location."""
-        return self._location
-
-    @location.setter
-    def location(self, value: engine.location.Location) -> None:
-        """Change location, moving this entity to the new location contents.
-        """
-        if self._location is value:
-            return
-        assert self not in value.contents
-        assert self._location.world is value.world
-        self._location.contents.remove(self)
-        self._location = value
-        value.contents.append(self)
 
 
 class Player(Entity):
