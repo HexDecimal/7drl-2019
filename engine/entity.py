@@ -7,7 +7,7 @@ import engine.location
 
 class Entity:
     Actor: Any = engine.component.Null
-    actor: Optional[engine.actor.Actor] = None
+    actor: Optional[engine.actor.Actor]
 
     def __init__(self, location: engine.location.Location) -> None:
         self._location = location

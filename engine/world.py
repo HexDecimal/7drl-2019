@@ -22,7 +22,8 @@ class World:
 
     def simulate(self) -> None:
         while not self.player:
-            self.tqueue.next().value()
+            ticket = self.tqueue.next()
+            ticket.value(ticket)
 
     def __getitem__(
         self,

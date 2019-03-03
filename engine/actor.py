@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 import tqueue
 
@@ -19,13 +19,16 @@ class Actor(engine.component.Component):
 
     def schedule(self, interval: int) -> None:
         assert self.entity
-        self.ticket = self.entity.location.world.tqueue.schedule(0, self)
+        self.ticket = self.world.tqueue.schedule(interval, self)
+        if self.world.player is self.entity:
+            self.world.player = None
 
     def act(self) -> None:
         self.schedule(100)
 
-    def __call__(self) -> None:
-        self.act()
+    def __call__(self, ticket: tqueue.Ticket) -> None:
+        if self.ticket is ticket:
+            self.act()
 
 
 class Player(Actor):

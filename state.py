@@ -80,7 +80,7 @@ class Game(State):
         for y in range(g.console.height):
             for x in range(g.console.width):
                 if g.world[x, y, 0].contents:
-                    g.console.ch[x,y] = ord('@')
+                    g.console.ch[x, y] = ord('@')
         super().on_draw()
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
@@ -89,5 +89,8 @@ class Game(State):
         if event.sym in self.DIR_KEYS:
             new_loc = player.location.get_relative(*self.DIR_KEYS[event.sym])
             player.location = new_loc
+            assert player.actor
+            player.actor.schedule(100)
         else:
             print(event)
+        g.world.simulate()
