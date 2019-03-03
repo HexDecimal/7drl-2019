@@ -18,6 +18,12 @@ class Component:
     def on_remove(self, entity: "engine.entity.Entity") -> None:
         pass
 
+    def on_replace(self, entity: "engine.entity.Entity", old: Any) -> None:
+        """Called instead of added/remove when an existing component is
+        replaced."""
+        old.on_remove(entity)
+        self.on_added(entity)
+
     @property
     def world(self) -> "engine.world.World":
         assert self.entity

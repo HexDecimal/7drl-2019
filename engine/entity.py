@@ -27,10 +27,14 @@ class Entity:
     ) -> None:
         if attr.startswith("_"):  # No special action for private attributes.
             return super().__setattr__(attr, value)
-        if attr in self._components:
-            self._components[attr].on_remove(self)
+        old: Any = self._components.get(attr, None)
+        if old and value:
+            self._components[attr] = value
+            value.on_replace(self, old)
+        elif old:
             del self._components[attr]
-        if value:
+            old.on_remove(self)
+        elif value:
             self._components[attr] = value
             value.on_added(self)
 

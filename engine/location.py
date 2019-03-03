@@ -17,9 +17,17 @@ class Location(engine.component.Component):
     def on_added(self, entity: "engine.entity.Entity") -> None:
         assert entity not in self.contents
         self.contents.append(entity)
+        if entity.actor:
+            entity.actor.schedule(0)
 
-    def on_remove(self, entity: "engine.entity.Entity") -> None:
-        self.contents.remove(entity)
+    def on_replace(
+        self,
+        entity: "engine.entity.Entity",
+        old: "Location"
+    ) -> None:
+        assert self.world is old.world
+        old.contents.remove(entity)
+        self.contents.append(entity)
 
     def get_relative(self, x: int, y: int, z: int = 0) -> "Location":
         """Return a location relative to this one."""

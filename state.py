@@ -1,5 +1,3 @@
-from typing import Dict, Tuple
-
 import tcod.event
 
 import g
@@ -43,7 +41,7 @@ class MainMenu(State):
 
 
 class Game(State):
-    DIR_KEYS: Dict[int, Tuple[int, int]] = {
+    DIR_KEYS = {
         tcod.event.K_LEFT: (-1, 0),
         tcod.event.K_RIGHT: (1, 0),
         tcod.event.K_UP: (0, -1),

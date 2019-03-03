@@ -29,10 +29,12 @@ class Actor(engine.component.Component):
     def __call__(self, ticket: tqueue.Ticket) -> None:
         if self.ticket is ticket:
             self.act()
+            assert self.ticket is not ticket
 
 
 class Player(Actor):
 
     def act(self) -> None:
         assert self.entity
-        self.entity.location.world.player = self.entity
+        self.ticket = None
+        self.world.player = self.entity
