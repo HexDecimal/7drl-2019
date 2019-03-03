@@ -1,9 +1,11 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import tqueue
 
+import actions
 import engine.component
-import engine.entity
+if TYPE_CHECKING:
+    import engine.entity
 
 
 class Actor(engine.component.Component):
@@ -24,7 +26,8 @@ class Actor(engine.component.Component):
             self.world.player = None
 
     def act(self) -> None:
-        self.schedule(100)
+        assert self.entity
+        actions.Wait(self.entity).invoke()
 
     def __call__(self, ticket: tqueue.Ticket) -> None:
         if self.ticket is ticket:

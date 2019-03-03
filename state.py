@@ -1,5 +1,6 @@
 import tcod.event
 
+import actions
 import g
 
 
@@ -28,7 +29,7 @@ class State(tcod.event.EventDispatch):
         pass
 
     def on_draw(self) -> None:
-        tcod.console_flush()  # type: ignore
+        tcod.console_flush()
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
         raise SystemExit()
@@ -74,21 +75,26 @@ class Game(State):
         g.world.simulate()
 
     def on_draw(self) -> None:
-        g.console.clear()
-        for y in range(g.console.height):
-            for x in range(g.console.width):
-                if g.world[x, y, 0].contents:
-                    g.console.ch[x, y] = ord('@')
+        g.world.render(g.console)
+        self.draw_ui()
         super().on_draw()
+
+    def draw_ui(self) -> None:
+        assert g.world.player
+        ui_console = tcod.console.Console(20, g.console.height, order="F")
+        ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
+        ui_console.print(1, 0, f"Time: {g.world.tqueue.time}")
+        ui_console.print(1, 1, f"Pos: {g.world.player.location.xyz}")
+
+        ui_console.blit(g.console, g.console.width - ui_console.width, 0)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         assert g.world.player
-        player = g.world.player
         if event.sym in self.DIR_KEYS:
-            new_loc = player.location.get_relative(*self.DIR_KEYS[event.sym])
-            player.location = new_loc
-            assert player.actor
-            player.actor.schedule(100)
+            actions.Move(
+                g.world.player,
+                (*self.DIR_KEYS[event.sym], 0),
+            ).invoke()
         else:
             print(event)
         g.world.simulate()

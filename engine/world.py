@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Tuple
 
+import tcod
 import tqueue
 
 import engine.entity
@@ -15,6 +16,8 @@ class World:
         self.height = height
         self.depth = depth
 
+        self.camera = (0, 0, 0)
+
         self.locations = {}
         self.tqueue = tqueue.TurnQueue()
 
@@ -24,6 +27,15 @@ class World:
         while not self.player:
             ticket = self.tqueue.next()
             ticket.value(ticket)
+
+    def render(self, console: tcod.console.Console) -> None:
+        console.clear()
+        for y in range(console.height):
+            for x in range(console.width):
+                for obj in self[x, y, 0].contents:
+                    if not obj.graphic:
+                        continue
+                    console.ch[x, y], console.fg[x, y] = obj.graphic.get()
 
     def __getitem__(
         self,

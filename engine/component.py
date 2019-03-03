@@ -1,7 +1,8 @@
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
-import engine.entity
-import engine.world
+if TYPE_CHECKING:
+    import engine.entity
+    import engine.world
 
 
 class Null:

@@ -1,19 +1,25 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
-import engine.actor
 import engine.component
-import engine.location
+if TYPE_CHECKING:
+    import engine.actor
+    import engine.graphic
+    import engine.location
 
 
 class Entity:
+    location: "engine.location.Location"
     Actor: Any = engine.component.Null
-    actor: Optional[engine.actor.Actor]
-    location: engine.location.Location
+    actor: Optional["engine.actor.Actor"]
+    Graphic: Any = engine.component.Null
+    graphic: Optional["engine.graphic.Graphic"]
 
-    def __init__(self, location: engine.location.Location) -> None:
+    def __init__(self, location: "engine.location.Location") -> None:
         self._components: Dict[str, engine.component.Component] = {}
         self.location = location
-        self.actor = self.Actor()
+        for annotation in self.__class__.__annotations__:
+            if annotation[0].isupper():
+                setattr(self, annotation.lower(), getattr(self, annotation)())
 
     def destroy(self) -> None:
         """Unlink this entity from the world."""
@@ -43,8 +49,3 @@ class Entity:
             return self._components[attr]
         except KeyError:
             return None
-
-
-class Player(Entity):
-    class Actor(engine.actor.Player):
-        pass

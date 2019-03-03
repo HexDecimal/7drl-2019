@@ -1,8 +1,9 @@
-from typing import List, Tuple
+from typing import List, Tuple, TYPE_CHECKING
 
 import engine.component
-import engine.entity
-import engine.world
+if TYPE_CHECKING:
+    import engine.entity
+    import engine.world
 
 
 class Location(engine.component.Component):

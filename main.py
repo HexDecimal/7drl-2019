@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
+from typing import Any, Dict
+
 import tcod
 
 import g
 import state
 import engine.world
-import engine.entity
+import objects.living
 
-FONT = {
+FONT: Dict[str, Any] = {
     "fontFile": "terminal8x12_gs_ro.png",
-    "flags": tcod.FONT_LAYOUT_CP437,  # type: ignore
+    "flags": tcod.FONT_LAYOUT_CP437,
 }
 
-CONFIG = {
+CONFIG: Dict[str, Any] = {
     "w": 800 // 8,
     "h": 500 // 12,
     "title": None,
@@ -20,10 +22,10 @@ CONFIG = {
 
 
 def main() -> None:
-    tcod.console_set_custom_font(**FONT)  # type: ignore
-    with tcod.console_init_root(**CONFIG) as g.console:  # type: ignore
+    tcod.console_set_custom_font(**FONT)
+    with tcod.console_init_root(**CONFIG) as g.console:
         g.world = engine.world.World(100, 100)
-        engine.entity.Player(g.world[0, 0, 0])
+        objects.living.Player(g.world[0, 0, 0])
         state.Game().activate()
 
 
