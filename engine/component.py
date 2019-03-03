@@ -25,6 +25,9 @@ class Component:
         old.on_remove(entity)
         self.on_added(entity)
 
+    def on_destroy(self, entity: "engine.entity.Entity") -> None:
+        """Owner entity is being destructed."""
+
     @property
     def world(self) -> "engine.world.World":
         assert self.entity

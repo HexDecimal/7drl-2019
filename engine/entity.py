@@ -23,8 +23,8 @@ class Entity:
 
     def destroy(self) -> None:
         """Unlink this entity from the world."""
-        self.actor = None
-        self.location.contents.remove(self)
+        for component in list(self._components.values()):
+            component.on_destroy(self)
 
     def __setattr__(
         self,

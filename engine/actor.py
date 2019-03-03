@@ -19,6 +19,10 @@ class Actor(engine.component.Component):
         self.entity = None
         self.ticket = None
 
+    def on_destroy(self, entity: "engine.entity.Entity") -> None:
+        assert self.entity
+        entity.actor = None
+
     def schedule(self, interval: int) -> None:
         assert self.entity
         self.ticket = self.world.tqueue.schedule(interval, self)
