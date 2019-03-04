@@ -37,5 +37,6 @@ class Location(engine.component.Component):
         """Return a location relative to this one."""
         return self.zone[self.xyz[0] + x, self.xyz[1] + y, self.xyz[2] + z]
 
-    def get_tile(self) -> Any:
-        return self.zone.tiles[self.xyz]
+    @property
+    def data(self) -> Any:
+        return self.zone.data[self.xyz]

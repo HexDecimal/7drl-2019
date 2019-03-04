@@ -20,10 +20,10 @@ class Zone:
 
         self.camera = (0, 0, 0)
 
-        self.tiles = np.empty((width, height, depth),
-                              dtype=self.DTYPE, order="F")
-        self.tiles["tile"] = tiles.metal_wall
-        self.tiles["tile"][1:-1, 1:-1, :] = tiles.metal_floor
+        self.data = np.empty((width, height, depth),
+                             dtype=self.DTYPE, order="F")
+        self.data["tile"] = tiles.metal_wall
+        self.data["tile"][1:-1, 1:-1, :] = tiles.metal_floor
 
         self.locations = {}
         self.tqueue = tqueue.TurnQueue()
@@ -49,8 +49,7 @@ class Zone:
         con_view = (slice(cam_left - cam_x, cam_right - cam_x),
                     slice(cam_top - cam_y, cam_bottom - cam_y))
 
-        tile = self.tiles["tile"][cam_left:cam_right,
-                                  cam_top:cam_bottom, cam_z]
+        tile = self.data["tile"][cam_left:cam_right, cam_top:cam_bottom, cam_z]
 
         console.ch[con_view] = tile["ch"]
         console.fg[con_view] = tile["fg"]

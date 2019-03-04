@@ -57,7 +57,7 @@ class BumpAction(Action):
 class Move(BumpAction):
     def poll(self) -> bool:
         dest = self.get_destination()
-        if not dest.get_tile()["tile"]["walkable"]:
+        if not dest.data["tile"]["walkable"]:
             return False
         for obj in dest.contents:
             if obj.actor:
