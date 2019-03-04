@@ -25,9 +25,9 @@ class Actor(engine.component.Component):
 
     def schedule(self, interval: int) -> None:
         assert self.entity
-        self.ticket = self.world.tqueue.schedule(interval, self)
-        if self.world.player is self.entity:
-            self.world.player = None
+        self.ticket = self.zone.tqueue.schedule(interval, self)
+        if self.zone.player is self.entity:
+            self.zone.player = None
 
     def act(self) -> None:
         assert self.entity
@@ -47,8 +47,8 @@ class Player(Actor):
 
     def act(self) -> None:
         assert self.entity
-        self.world.camera = self.entity.location.xyz
-        self.world.player = self.entity
+        self.zone.camera = self.entity.location.xyz
+        self.zone.player = self.entity
 
     def is_player_controlled(self) -> bool:
         return True

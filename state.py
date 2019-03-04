@@ -38,7 +38,7 @@ class State(tcod.event.EventDispatch):
 class MainMenu(State):
 
     def on_enter(self) -> None:
-        g.console.print(0, 0, "Hello world!")
+        g.console.print(0, 0, "Hello zone!")
 
 
 class Game(State):
@@ -76,29 +76,29 @@ class Game(State):
     }
 
     def on_enter(self) -> None:
-        g.world.simulate()
+        g.zone.simulate()
 
     def on_draw(self) -> None:
-        g.world.render(g.console)
+        g.zone.render(g.console)
         self.draw_ui()
         super().on_draw()
 
     def draw_ui(self) -> None:
         ui_console = tcod.console.Console(20, g.console.height, order="F")
         ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
-        ui_console.print(1, 0, f"Time: {g.world.tqueue.time}")
+        ui_console.print(1, 0, f"Time: {g.zone.tqueue.time}")
         ui_console.print(1, 1, f"Pos: {g.player.location.xyz}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0,
                         bg_alpha=0.9)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
-        assert g.world.player
-        player = g.world.player
+        assert g.zone.player
+        player = g.zone.player
         if event.sym in self.DIR_KEYS:
             actions.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
         elif event.sym in self.WAIT_KEYS:
             actions.Wait(player).invoke()
         else:
             print(event)
-        g.world.simulate()
+        g.zone.simulate()

@@ -5,7 +5,7 @@ import tcod
 
 import g
 import state
-import engine.world
+import engine.zone
 import objects.living
 
 FONT: Dict[str, Any] = {
@@ -24,9 +24,9 @@ CONFIG: Dict[str, Any] = {
 def main() -> None:
     tcod.console_set_custom_font(**FONT)
     with tcod.console_init_root(**CONFIG) as g.console:
-        g.world = engine.world.World(100, 100)
-        g.player = objects.living.Player(g.world[1, 1, 0])
-        objects.living.TestActor(g.world[50, 1, 0])
+        g.zone = engine.zone.Zone(100, 100)
+        g.player = objects.living.Player(g.zone[1, 1, 0])
+        objects.living.TestActor(g.zone[50, 1, 0])
         state.Game().activate()
 
 

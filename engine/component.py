@@ -2,7 +2,7 @@ from typing import Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import engine.entity
-    import engine.world
+    import engine.zone
 
 
 class Null:
@@ -29,6 +29,6 @@ class Component:
         """Owner entity is being destructed."""
 
     @property
-    def world(self) -> "engine.world.World":
+    def zone(self) -> "engine.zone.Zone":
         assert self.entity
-        return self.entity.location.world
+        return self.entity.location.zone

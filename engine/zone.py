@@ -9,7 +9,7 @@ import engine.location
 import tiles
 
 
-class World:
+class Zone:
     DTYPE: Any = [("tile", tiles.DTYPE)]
     locations: Dict[Tuple[int, int, int], engine.location.Location]
 

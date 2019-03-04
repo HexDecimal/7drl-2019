@@ -3,15 +3,15 @@ from typing import Any, List, Tuple, TYPE_CHECKING
 import engine.component
 if TYPE_CHECKING:
     import engine.entity
-    import engine.world
+    import engine.zone
 
 
 class Location(engine.component.Component):
-    # Remove the world property from Component.
-    world: "engine.world.World" = None  # type: ignore
+    # Remove the zone property from Component.
+    zone: "engine.zone.Zone" = None  # type: ignore
 
-    def __init__(self, world: "engine.world.World", xyz: Tuple[int, int, int]):
-        self.world = world
+    def __init__(self, zone: "engine.zone.Zone", xyz: Tuple[int, int, int]):
+        self.zone = zone
         self.xyz = xyz
         self.contents: List[engine.entity.Entity] = []
 
@@ -26,7 +26,7 @@ class Location(engine.component.Component):
         entity: "engine.entity.Entity",
         old: "Location"
     ) -> None:
-        assert self.world is old.world
+        assert self.zone is old.zone
         old.contents.remove(entity)
         self.contents.append(entity)
 
@@ -35,7 +35,7 @@ class Location(engine.component.Component):
 
     def get_relative(self, x: int, y: int, z: int = 0) -> "Location":
         """Return a location relative to this one."""
-        return self.world[self.xyz[0] + x, self.xyz[1] + y, self.xyz[2] + z]
+        return self.zone[self.xyz[0] + x, self.xyz[1] + y, self.xyz[2] + z]
 
     def get_tile(self) -> Any:
-        return self.world.tiles[self.xyz]
+        return self.zone.tiles[self.xyz]
