@@ -84,11 +84,10 @@ class Game(State):
         super().on_draw()
 
     def draw_ui(self) -> None:
-        assert g.world.player
         ui_console = tcod.console.Console(20, g.console.height, order="F")
         ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
         ui_console.print(1, 0, f"Time: {g.world.tqueue.time}")
-        ui_console.print(1, 1, f"Pos: {g.world.player.location.xyz}")
+        ui_console.print(1, 1, f"Pos: {g.player.location.xyz}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0,
                         bg_alpha=0.9)
