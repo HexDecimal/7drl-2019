@@ -1,9 +1,9 @@
 from typing import Tuple, Optional
 
-import engine.component
+import component.base
 
 
-class Graphic(engine.component.Component):
+class Graphic(component.base.Component):
     CH = ord('!')
     FG = (255, 255, 255)
 

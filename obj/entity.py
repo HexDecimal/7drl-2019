@@ -1,21 +1,21 @@
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
-import engine.component
+import component.base
 if TYPE_CHECKING:
-    import engine.actor
-    import engine.graphic
-    import engine.location
+    import component.actor
+    import component.graphic
+    import component.location
 
 
 class Entity:
-    location: "engine.location.Location"
-    Actor: Any = engine.component.Null
-    actor: Optional["engine.actor.Actor"]
-    Graphic: Any = engine.component.Null
-    graphic: Optional["engine.graphic.Graphic"]
+    location: "component.location.Location"
+    Actor: Any = component.base.Null
+    actor: Optional["component.actor.Actor"]
+    Graphic: Any = component.base.Null
+    graphic: Optional["component.graphic.Graphic"]
 
-    def __init__(self, location: "engine.location.Location") -> None:
-        self._components: Dict[str, engine.component.Component] = {}
+    def __init__(self, location: "component.location.Location") -> None:
+        self._components: Dict[str, component.base.Component] = {}
         self.location = location
         for annotation in self.__class__.__annotations__:
             if annotation[0].isupper():
@@ -29,7 +29,7 @@ class Entity:
     def __setattr__(
         self,
         attr: str,
-        value: Optional[engine.component.Component],
+        value: Optional[component.base.Component],
     ) -> None:
         if attr.startswith("_"):  # No special action for private attributes.
             return super().__setattr__(attr, value)

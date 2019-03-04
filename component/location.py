@@ -1,21 +1,21 @@
 from typing import Any, List, Tuple, TYPE_CHECKING
 
-import engine.component
+import component.base
 if TYPE_CHECKING:
-    import engine.entity
+    import obj.entity
     import engine.zone
 
 
-class Location(engine.component.Component):
+class Location(component.base.Component):
     # Remove the zone property from Component.
     zone: "engine.zone.Zone" = None  # type: ignore
 
     def __init__(self, zone: "engine.zone.Zone", xyz: Tuple[int, int, int]):
         self.zone = zone
         self.xyz = xyz
-        self.contents: List[engine.entity.Entity] = []
+        self.contents: List[obj.entity.Entity] = []
 
-    def on_added(self, entity: "engine.entity.Entity") -> None:
+    def on_added(self, entity: "obj.entity.Entity") -> None:
         assert entity not in self.contents
         self.contents.append(entity)
         if entity.actor:
@@ -23,14 +23,14 @@ class Location(engine.component.Component):
 
     def on_replace(
         self,
-        entity: "engine.entity.Entity",
+        entity: "obj.entity.Entity",
         old: "Location"
     ) -> None:
         assert self.zone is old.zone
         old.contents.remove(entity)
         self.contents.append(entity)
 
-    def on_destroy(self, entity: "engine.entity.Entity") -> None:
+    def on_destroy(self, entity: "obj.entity.Entity") -> None:
         self.contents.remove(entity)
 
     def get_relative(self, x: int, y: int, z: int = 0) -> "Location":

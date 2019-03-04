@@ -1,13 +1,13 @@
 from typing import Tuple, Optional, TYPE_CHECKING
 
-import engine.entity
-import engine.graphic
+import obj.entity
+import component.graphic
 if TYPE_CHECKING:
-    import engine.location
+    import component.location
 
 
 class Action:
-    def __init__(self, entity: engine.entity.Entity):
+    def __init__(self, entity: obj.entity.Entity):
         self.entity = entity
 
     def invoke(self) -> bool:
@@ -43,13 +43,13 @@ class BumpAction(Action):
     """An action with a direction."""
     def __init__(
         self,
-        entity: engine.entity.Entity,
+        entity: obj.entity.Entity,
         direction: Tuple[int, int, int],
     ):
         super().__init__(entity)
         self.direction = direction
 
-    def get_destination(self) -> "engine.location.Location":
+    def get_destination(self) -> "component.location.Location":
         """Return the location at the destination."""
         return self.entity.location.get_relative(*self.direction)
 
@@ -72,7 +72,7 @@ class Move(BumpAction):
 
 
 class BumpAttack(BumpAction):
-    def get_target(self) -> Optional[engine.entity.Entity]:
+    def get_target(self) -> Optional[obj.entity.Entity]:
         for obj in self.get_destination().contents:
             if obj.actor:
                 return obj
@@ -85,14 +85,14 @@ class BumpAttack(BumpAction):
         target = self.get_target()
         assert target
         target.actor = None
-        target.graphic = engine.graphic.Graphic(ord('%'), (63, 63, 63))
+        target.graphic = component.graphic.Graphic(ord('%'), (63, 63, 63))
         return 100
 
 
 class Bump(Action):
     def __init__(
         self,
-        entity: engine.entity.Entity,
+        entity: obj.entity.Entity,
         direction: Tuple[int, int, int],
     ) -> None:
         super().__init__(entity)

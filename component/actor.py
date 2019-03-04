@@ -3,23 +3,23 @@ from typing import Optional, TYPE_CHECKING
 import tqueue
 
 import actions
-import engine.component
+import component.base
 if TYPE_CHECKING:
-    import engine.entity
+    import obj.entity
 
 
-class Actor(engine.component.Component):
+class Actor(component.base.Component):
     ticket: Optional[tqueue.Ticket] = None
 
-    def on_added(self, entity: "engine.entity.Entity") -> None:
-        self.entity: Optional[engine.entity.Entity] = entity
+    def on_added(self, entity: "obj.entity.Entity") -> None:
+        self.entity: Optional[obj.entity.Entity] = entity
         self.schedule(0)
 
-    def on_remove(self, entity: "engine.entity.Entity") -> None:
+    def on_remove(self, entity: "obj.entity.Entity") -> None:
         self.entity = None
         self.ticket = None
 
-    def on_destroy(self, entity: "engine.entity.Entity") -> None:
+    def on_destroy(self, entity: "obj.entity.Entity") -> None:
         assert self.entity
         entity.actor = None
 
