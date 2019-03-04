@@ -34,6 +34,8 @@ class Zone:
         while not self.player:
             ticket = self.tqueue.next()
             ticket.value(ticket)
+        assert self.player.actor
+        self.player.actor.action = None  # Clear PlayerControl action.
 
     def render(self, console: tcod.console.Console) -> None:
         console.clear()

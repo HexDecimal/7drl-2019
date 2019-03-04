@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 
 
 class Action:
-    TIMELESS = False
 
     def __init__(self, entity: obj.entity.Entity):
         self.entity = entity
@@ -17,13 +16,15 @@ class Action:
         """Attempt the action and return True if the action was performed."""
         assert self.entity.actor, "Action invoked on a non-actor entity."
         # Ensure this actor was not already scheduled.
+        assert self.entity.actor.action is None, \
+            "Actor already has an action."
         assert self.entity.actor.ticket is None, \
             "Actor is already waiting after an action."
         if not self.poll():
             return False
         self.entity.actor.action = self
         interval = self.action()
-        if not self.TIMELESS:
+        if interval is not None:
             self.entity.actor.schedule(interval)
         return True
 
@@ -31,7 +32,7 @@ class Action:
         """Return True if this action would be valid."""
         return True
 
-    def action(self) -> int:
+    def action(self) -> Optional[int]:
         """Perform the action.
 
         This should never be called unless poll returns True.
@@ -108,7 +109,7 @@ class BumpInteract(BumpAction):
         target = self.get_target()
         assert target and target.interactable
         target.interactable.interaction(self.entity)
-        return 1000
+        return 0
 
 
 class Bump(Action):
@@ -128,7 +129,7 @@ class Bump(Action):
                 return True
         return False
 
-    def action(self) -> int:
+    def action(self) -> Optional[int]:
         for action_type in self.ACTIONS:
             action = action_type(self.entity, self.direction)
             if action.poll():
@@ -137,13 +138,14 @@ class Bump(Action):
 
 
 class PlayerControl(Action):
-    TIMELESS = True
-
-    def action(self) -> int:
+    """Give immediate user control to this entity."""
+    def action(self) -> Optional[int]:
         assert self.entity
+        assert self.entity.actor
+        self.entity.actor.controlled = True
         self.entity.location.zone.camera = self.entity.location.xyz
         self.entity.location.zone.player = self.entity
-        return 0
+        return None  # Further actions will be pending.
 
 
 class ReturnControlToPlayer(Action):
@@ -151,13 +153,10 @@ class ReturnControlToPlayer(Action):
         assert g.player.actor
         assert self.entity.actor
         self.entity.actor.controlled = False
-        g.player.actor.controlled = True
-        g.player.actor.schedule(0)
+        g.player.actor.take_control()
         return 0
 
 
 class Standby(Action):
-    TIMELESS = True
-
-    def action(self) -> int:
-        return 0
+    def action(self) -> None:
+        return None
