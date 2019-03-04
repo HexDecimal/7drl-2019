@@ -1,5 +1,7 @@
 from typing import Tuple, Optional, TYPE_CHECKING
 
+import tcod.path
+
 import g
 import obj.entity
 import component.graphic
@@ -20,17 +22,18 @@ class Action:
             "Actor already has an action."
         assert self.entity.actor.ticket is None, \
             "Actor is already waiting after an action."
-        if not self.poll():
+        ready_action = self.poll()
+        if ready_action is None:
             return False
         self.entity.actor.action = self
-        interval = self.action()
+        interval = ready_action.action()
         if interval is not None:
             self.entity.actor.schedule(interval)
         return True
 
-    def poll(self) -> bool:
-        """Return True if this action would be valid."""
-        return True
+    def poll(self) -> Optional["Action"]:
+        """Return an action which would be valid."""
+        return self
 
     def action(self) -> Optional[int]:
         """Perform the action.
@@ -43,6 +46,22 @@ class Action:
 class Wait(Action):
     def action(self) -> int:
         return 100
+
+
+class TargetAction(Action):
+    """Action with an entity target."""
+    def __init__(
+        self,
+        entity: obj.entity.Entity,
+        target: obj.entity.Entity,
+    ):
+        super().__init__(entity)
+        self.target = target
+
+    def poll(self) -> Optional["Action"]:
+        if self.target.is_alive():
+            return self
+        return None
 
 
 class BumpAction(Action):
@@ -61,14 +80,14 @@ class BumpAction(Action):
 
 
 class Move(BumpAction):
-    def poll(self) -> bool:
+    def poll(self) -> Optional["Action"]:
         dest = self.get_destination()
         if not dest.data["tile"]["walkable"]:
-            return False
+            return None
         for entity in dest.contents:
             if entity.actor:
-                return False
-        return True
+                return None
+        return self
 
     def action(self) -> int:
         self.entity.location = self.get_destination()
@@ -84,8 +103,10 @@ class BumpAttack(BumpAction):
                 return entity
         return None
 
-    def poll(self) -> bool:
-        return bool(self.get_target())
+    def poll(self) -> Optional["Action"]:
+        if self.get_target():
+            return self
+        return None
 
     def action(self) -> int:
         target = self.get_target()
@@ -102,8 +123,10 @@ class BumpInteract(BumpAction):
                 return entity
         return None
 
-    def poll(self) -> bool:
-        return bool(self.get_target())
+    def poll(self) -> Optional["Action"]:
+        if self.get_target():
+            return self
+        return None
 
     def action(self) -> int:
         target = self.get_target()
@@ -123,18 +146,12 @@ class Bump(Action):
 
     ACTIONS = (Move, BumpInteract, BumpAttack)
 
-    def poll(self) -> bool:
+    def poll(self) -> Optional[Action]:
         for action_type in self.ACTIONS:
-            if action_type(self.entity, self.direction).poll():
-                return True
-        return False
-
-    def action(self) -> Optional[int]:
-        for action_type in self.ACTIONS:
-            action = action_type(self.entity, self.direction)
-            if action.poll():
-                return action.action()
-        assert False  # Will not be reached if poll returns True.
+            action = action_type(self.entity, self.direction).poll()
+            if action is not None:
+                return action
+        return None
 
 
 class PlayerControl(Action):
@@ -160,3 +177,28 @@ class ReturnControlToPlayer(Action):
 class Standby(Action):
     def action(self) -> None:
         return None
+
+
+class Follow(TargetAction):
+    def __init__(
+        self,
+        entity: obj.entity.Entity,
+        target: obj.entity.Entity,
+    ):
+        super().__init__(entity, target)
+        z = entity.location.xyz[2]
+        self.pathfinder = tcod.path.AStar(
+            entity.location.zone.data["tile"]["walkable"][:, :, z],
+        )
+
+    def poll(self) -> Optional[Action]:
+        my_coord = self.entity.location.xyz[:2]
+        target_coord = self.target.location.xyz[:2]
+        path = self.pathfinder.get_path(*my_coord, *target_coord)
+        if len(path) >= 2:
+            return Move(
+                self.entity,
+                (path[0][0] - my_coord[0], path[0][1] - my_coord[1],  0),
+            ).poll()
+        else:
+            return Wait(self.entity).poll()

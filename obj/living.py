@@ -3,6 +3,7 @@ import actions
 import component.actor
 import component.graphic
 import component.verb
+import g
 import obj.entity
 
 
@@ -19,7 +20,9 @@ class Player(obj.entity.Entity):
 class TestActor(obj.entity.Entity):
     class Actor(component.actor.Actor):
         def act(self) -> None:
-            if not actions.Move(self.owner, (-1, 0, 0)).invoke():
+            if g.player:
+                actions.Follow(self.owner, g.player).invoke()
+            else:
                 actions.Wait(self.owner).invoke()
 
     class Graphic(component.graphic.Graphic):

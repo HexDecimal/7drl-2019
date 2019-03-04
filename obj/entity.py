@@ -29,6 +29,10 @@ class Entity:
         for my_component in list(self._components.values()):
             my_component.on_destroy(self)
 
+    def is_alive(self) -> bool:
+        """Return True if this entity has not been destroyed."""
+        return self in self.location.contents
+
     def __setattr__(
         self,
         attr: str,
