@@ -31,6 +31,7 @@ class Actor(component.base.OwnedComponent):
         self.owner.actor = None
 
     def schedule(self, interval: int) -> None:
+        assert self.ticket is None
         self.ticket = self.zone.tqueue.schedule(interval, self)
         if self.zone.player is self.owner:
             self.zone.player = None
@@ -44,7 +45,8 @@ class Actor(component.base.OwnedComponent):
             self.action = None
             if not self.controlled:
                 self.action = self.act()
-                self.action.invoke()
+                if not self.action.invoke():
+                    self.schedule(100)
             else:
                 actions.PlayerControl(self.owner).invoke()
 
