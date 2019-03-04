@@ -90,7 +90,8 @@ class Game(State):
         ui_console.print(1, 0, f"Time: {g.world.tqueue.time}")
         ui_console.print(1, 1, f"Pos: {g.world.player.location.xyz}")
 
-        ui_console.blit(g.console, g.console.width - ui_console.width, 0)
+        ui_console.blit(g.console, g.console.width - ui_console.width, 0,
+                        bg_alpha=0.9)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         assert g.world.player

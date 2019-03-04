@@ -1,4 +1,4 @@
-from typing import List, Tuple, TYPE_CHECKING
+from typing import Any, List, Tuple, TYPE_CHECKING
 
 import engine.component
 if TYPE_CHECKING:
@@ -36,3 +36,6 @@ class Location(engine.component.Component):
     def get_relative(self, x: int, y: int, z: int = 0) -> "Location":
         """Return a location relative to this one."""
         return self.world[self.xyz[0] + x, self.xyz[1] + y, self.xyz[2] + z]
+
+    def get_tile(self) -> Any:
+        return self.world.tiles[self.xyz]

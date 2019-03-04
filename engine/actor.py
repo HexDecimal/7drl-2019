@@ -47,7 +47,7 @@ class Player(Actor):
 
     def act(self) -> None:
         assert self.entity
-        self.ticket = None
+        self.world.camera = self.entity.location.xyz
         self.world.player = self.entity
 
     def is_player_controlled(self) -> bool:

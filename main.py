@@ -25,8 +25,8 @@ def main() -> None:
     tcod.console_set_custom_font(**FONT)
     with tcod.console_init_root(**CONFIG) as g.console:
         g.world = engine.world.World(100, 100)
-        objects.living.Player(g.world[0, 0, 0])
-        objects.living.TestActor(g.world[50, 0, 0])
+        objects.living.Player(g.world[1, 1, 0])
+        objects.living.TestActor(g.world[50, 1, 0])
         state.Game().activate()
 
 
