@@ -57,10 +57,10 @@ class Zone:
 
         for y in range(console.height):
             for x in range(console.width):
-                for obj in self[x + cam_x, y + cam_y, cam_z].contents:
-                    if not obj.graphic:
+                for entity in self[x + cam_x, y + cam_y, cam_z].contents:
+                    if not entity.graphic:
                         continue
-                    console.ch[x, y], console.fg[x, y] = obj.graphic.get()
+                    console.ch[x, y], console.fg[x, y] = entity.graphic.get()
 
     def __getitem__(
         self,

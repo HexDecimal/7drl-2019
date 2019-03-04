@@ -27,6 +27,7 @@ def main() -> None:
         g.zone = engine.zone.Zone(100, 100)
         g.player = obj.living.Player(g.zone[1, 1, 0])
         obj.living.TestActor(g.zone[50, 1, 0])
+        obj.living.TestRobot(g.zone[3, 3, 0])
         state.Game().activate()
 
 

@@ -1,5 +1,6 @@
 from typing import Tuple, Optional, TYPE_CHECKING
 
+import g
 import obj.entity
 import component.graphic
 if TYPE_CHECKING:
@@ -7,6 +8,8 @@ if TYPE_CHECKING:
 
 
 class Action:
+    TIMELESS = False
+
     def __init__(self, entity: obj.entity.Entity):
         self.entity = entity
 
@@ -18,8 +21,10 @@ class Action:
             "Actor is already waiting after an action."
         if not self.poll():
             return False
+        self.entity.actor.action = self
         interval = self.action()
-        self.entity.actor.schedule(interval)
+        if not self.TIMELESS:
+            self.entity.actor.schedule(interval)
         return True
 
     def poll(self) -> bool:
@@ -59,8 +64,8 @@ class Move(BumpAction):
         dest = self.get_destination()
         if not dest.data["tile"]["walkable"]:
             return False
-        for obj in dest.contents:
-            if obj.actor:
+        for entity in dest.contents:
+            if entity.actor:
                 return False
         return True
 
@@ -73,9 +78,9 @@ class Move(BumpAction):
 
 class BumpAttack(BumpAction):
     def get_target(self) -> Optional[obj.entity.Entity]:
-        for obj in self.get_destination().contents:
-            if obj.actor:
-                return obj
+        for entity in self.get_destination().contents:
+            if entity.actor:
+                return entity
         return None
 
     def poll(self) -> bool:
@@ -89,6 +94,23 @@ class BumpAttack(BumpAction):
         return 100
 
 
+class BumpInteract(BumpAction):
+    def get_target(self) -> Optional[obj.entity.Entity]:
+        for entity in self.get_destination().contents:
+            if entity.interactable:
+                return entity
+        return None
+
+    def poll(self) -> bool:
+        return bool(self.get_target())
+
+    def action(self) -> int:
+        target = self.get_target()
+        assert target and target.interactable
+        target.interactable.interaction(self.entity)
+        return 1000
+
+
 class Bump(Action):
     def __init__(
         self,
@@ -98,7 +120,7 @@ class Bump(Action):
         super().__init__(entity)
         self.direction = direction
 
-    ACTIONS = (Move, BumpAttack)
+    ACTIONS = (Move, BumpInteract, BumpAttack)
 
     def poll(self) -> bool:
         for action_type in self.ACTIONS:
@@ -112,3 +134,30 @@ class Bump(Action):
             if action.poll():
                 return action.action()
         assert False  # Will not be reached if poll returns True.
+
+
+class PlayerControl(Action):
+    TIMELESS = True
+
+    def action(self) -> int:
+        assert self.entity
+        self.entity.location.zone.camera = self.entity.location.xyz
+        self.entity.location.zone.player = self.entity
+        return 0
+
+
+class ReturnControlToPlayer(Action):
+    def action(self) -> int:
+        assert g.player.actor
+        assert self.entity.actor
+        self.entity.actor.controlled = False
+        g.player.actor.controlled = True
+        g.player.actor.schedule(0)
+        return 0
+
+
+class Standby(Action):
+    TIMELESS = True
+
+    def action(self) -> int:
+        return 0

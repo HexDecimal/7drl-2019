@@ -8,47 +8,51 @@ if TYPE_CHECKING:
     import obj.entity
 
 
-class Actor(component.base.Component):
-    ticket: Optional[tqueue.Ticket] = None
+class Actor(component.base.OwnedComponent):
+    controlled = False
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.ticket: Optional[tqueue.Ticket] = None
+        self.action: Optional[actions.Action] = None
 
     def on_added(self, entity: "obj.entity.Entity") -> None:
-        self.entity: Optional[obj.entity.Entity] = entity
+        super().on_added(entity)
         self.schedule(0)
 
     def on_remove(self, entity: "obj.entity.Entity") -> None:
-        self.entity = None
+        super().on_remove(entity)
         self.ticket = None
 
     def on_destroy(self, entity: "obj.entity.Entity") -> None:
-        assert self.entity
-        entity.actor = None
+        super().on_destroy(entity)
+        self.owner.actor = None
 
     def schedule(self, interval: int) -> None:
-        assert self.entity
         self.ticket = self.zone.tqueue.schedule(interval, self)
-        if self.zone.player is self.entity:
+        if self.zone.player is self.owner:
             self.zone.player = None
 
     def act(self) -> None:
-        assert self.entity
-        actions.Wait(self.entity).invoke()
+        actions.Wait(self.owner).invoke()
 
     def __call__(self, ticket: tqueue.Ticket) -> None:
         if self.ticket is ticket:
             self.ticket = None
-            self.act()
-            assert self.ticket or self.is_player_controlled()
+            if not self.controlled:
+                self.act()
+                assert self.ticket or self.action and self.action.TIMELESS
+            else:
+                actions.PlayerControl(self.owner).invoke()
 
-    def is_player_controlled(self) -> bool:
-        return False
+    def is_controlled(self) -> bool:
+        return self.controlled
 
 
 class Player(Actor):
+    controlled = True
 
+
+class Robot(Actor):
     def act(self) -> None:
-        assert self.entity
-        self.zone.camera = self.entity.location.xyz
-        self.zone.player = self.entity
-
-    def is_player_controlled(self) -> bool:
-        return True
+        actions.Wait(self.owner).invoke()

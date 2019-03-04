@@ -99,6 +99,8 @@ class Game(State):
             actions.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
         elif event.sym in self.WAIT_KEYS:
             actions.Wait(player).invoke()
+        elif event.sym == tcod.event.K_BACKSPACE:
+            actions.ReturnControlToPlayer(player).invoke()
         else:
             print(event)
         g.zone.simulate()

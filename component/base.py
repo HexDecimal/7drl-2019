@@ -1,4 +1,4 @@
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import obj.entity
@@ -11,8 +11,6 @@ class Null:
 
 
 class Component:
-    entity: Optional["obj.entity.Entity"] = None
-
     def on_added(self, entity: "obj.entity.Entity") -> None:
         pass
 
@@ -28,7 +26,14 @@ class Component:
     def on_destroy(self, entity: "obj.entity.Entity") -> None:
         """Owner entity is being destructed."""
 
+
+class OwnedComponent(Component):
+    owner: "obj.entity.Entity"
+
+    def on_added(self, entity: "obj.entity.Entity") -> None:
+        self.owner = entity
+        super().on_added(entity)
+
     @property
     def zone(self) -> "engine.zone.Zone":
-        assert self.entity
-        return self.entity.location.zone
+        return self.owner.location.zone

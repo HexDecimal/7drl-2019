@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     import component.actor
     import component.graphic
     import component.location
+    import component.verb
 
 
 class Entity:
@@ -13,6 +14,8 @@ class Entity:
     actor: Optional["component.actor.Actor"]
     Graphic: Any = component.base.Null
     graphic: Optional["component.graphic.Graphic"]
+    Interactable: Any = component.base.Null
+    interactable: Optional["component.verb.Interactable"]
 
     def __init__(self, location: "component.location.Location") -> None:
         self._components: Dict[str, component.base.Component] = {}
@@ -23,8 +26,8 @@ class Entity:
 
     def destroy(self) -> None:
         """Unlink this entity from the world."""
-        for component in list(self._components.values()):
-            component.on_destroy(self)
+        for my_component in list(self._components.values()):
+            my_component.on_destroy(self)
 
     def __setattr__(
         self,
