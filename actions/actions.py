@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Tuple, Optional, TYPE_CHECKING
 
 import tcod.path
@@ -31,7 +33,7 @@ class Action:
             self.entity.actor.schedule(interval)
         return True
 
-    def poll(self) -> Optional["Action"]:
+    def poll(self) -> Optional[Action]:
         """Return an action which would be valid."""
         return self
 
@@ -58,7 +60,7 @@ class TargetAction(Action):
         super().__init__(entity)
         self.target = target
 
-    def poll(self) -> Optional["Action"]:
+    def poll(self) -> Optional[Action]:
         if self.target.is_alive():
             return self
         return None
@@ -74,13 +76,13 @@ class BumpAction(Action):
         super().__init__(entity)
         self.direction = direction
 
-    def get_destination(self) -> "component.location.Location":
+    def get_destination(self) -> component.location.Location:
         """Return the location at the destination."""
         return self.entity.location.get_relative(*self.direction)
 
 
 class Move(BumpAction):
-    def poll(self) -> Optional["Action"]:
+    def poll(self) -> Optional[Action]:
         dest = self.get_destination()
         if not dest.data["tile"]["walkable"]:
             return None
@@ -103,7 +105,7 @@ class BumpAttack(BumpAction):
                 return entity
         return None
 
-    def poll(self) -> Optional["Action"]:
+    def poll(self) -> Optional[Action]:
         if self.get_target():
             return self
         return None
@@ -123,7 +125,7 @@ class BumpInteract(BumpAction):
                 return entity
         return None
 
-    def poll(self) -> Optional["Action"]:
+    def poll(self) -> Optional[Action]:
         if self.get_target():
             return self
         return None

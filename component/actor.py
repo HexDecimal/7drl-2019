@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional, TYPE_CHECKING
 
 import tqueue
@@ -16,15 +18,15 @@ class Actor(component.base.OwnedComponent):
         self.ticket: Optional[tqueue.Ticket] = None
         self.action: Optional[actions.Action] = None
 
-    def on_added(self, entity: "obj.entity.Entity") -> None:
+    def on_added(self, entity: obj.entity.Entity) -> None:
         super().on_added(entity)
         self.schedule(0)
 
-    def on_remove(self, entity: "obj.entity.Entity") -> None:
+    def on_remove(self, entity: obj.entity.Entity) -> None:
         super().on_remove(entity)
         self.ticket = None
 
-    def on_destroy(self, entity: "obj.entity.Entity") -> None:
+    def on_destroy(self, entity: obj.entity.Entity) -> None:
         super().on_destroy(entity)
         self.owner.actor = None
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import component.base
@@ -9,15 +11,15 @@ if TYPE_CHECKING:
 
 
 class Entity:
-    location: "component.location.Location"
+    location: component.location.Location
     Actor: Any = component.base.Null
-    actor: Optional["component.actor.Actor"]
+    actor: Optional[component.actor.Actor]
     Graphic: Any = component.base.Null
-    graphic: Optional["component.graphic.Graphic"]
+    graphic: Optional[component.graphic.Graphic]
     Interactable: Any = component.base.Null
-    interactable: Optional["component.verb.Interactable"]
+    interactable: Optional[component.verb.Interactable]
 
-    def __init__(self, location: "component.location.Location") -> None:
+    def __init__(self, location: component.location.Location) -> None:
         self._components: Dict[str, component.base.Component] = {}
         self.location = location
         for annotation in self.__class__.__annotations__:
