@@ -20,14 +20,11 @@ class Action:
         """Attempt the action and return True if the action was performed."""
         assert self.entity.actor, "Action invoked on a non-actor entity."
         # Ensure this actor was not already scheduled.
-        assert self.entity.actor.action is None, \
-            "Actor already has an action."
         assert self.entity.actor.ticket is None, \
             "Actor is already waiting after an action."
         ready_action = self.poll()
         if ready_action is None:
             return False
-        self.entity.actor.action = self
         interval = ready_action.action()
         if interval is not None:
             self.entity.actor.schedule(interval)

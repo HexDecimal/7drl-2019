@@ -35,16 +35,16 @@ class Actor(component.base.OwnedComponent):
         if self.zone.player is self.owner:
             self.zone.player = None
 
-    def act(self) -> None:
-        actions.Wait(self.owner).invoke()
+    def act(self) -> actions.Action:
+        return actions.Wait(self.owner)
 
     def __call__(self, ticket: tqueue.Ticket) -> None:
         if self.ticket is ticket:
             self.ticket = None
             self.action = None
             if not self.controlled:
-                self.act()
-                assert self.action, "No action was invoked."
+                self.action = self.act()
+                self.action.invoke()
             else:
                 actions.PlayerControl(self.owner).invoke()
 
@@ -58,12 +58,3 @@ class Actor(component.base.OwnedComponent):
     def interrupt(self, force: bool = False) -> None:
         self.ticket = None
         self.action = None
-
-
-class Player(Actor):
-    controlled = True
-
-
-class Robot(Actor):
-    def act(self) -> None:
-        actions.Standby(self.owner).invoke()

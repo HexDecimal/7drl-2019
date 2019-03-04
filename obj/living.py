@@ -9,8 +9,8 @@ import obj.entity
 
 
 class Player(obj.entity.Entity):
-    class Actor(component.actor.Player):
-        pass
+    class Actor(component.actor.Actor):
+        controlled = True
 
     class Graphic(component.graphic.Graphic):
         CH = ord("@")
@@ -20,19 +20,19 @@ class Player(obj.entity.Entity):
 
 class TestActor(obj.entity.Entity):
     class Actor(component.actor.Actor):
-        def act(self) -> None:
+        def act(self) -> actions.Action:
             if g.player:
-                actions.Follow(self.owner, g.player).invoke()
-            else:
-                actions.Wait(self.owner).invoke()
+                return actions.Follow(self.owner, g.player)
+            return actions.Wait(self.owner)
 
     class Graphic(component.graphic.Graphic):
         CH = ord("T")
 
 
 class TestRobot(obj.entity.Entity):
-    class Actor(component.actor.Robot):
-        pass
+    class Actor(component.actor.Actor):
+        def act(self) -> actions.Action:
+            return actions.Standby(self.owner)
 
     class Graphic(component.graphic.Graphic):
         CH = ord("R")
