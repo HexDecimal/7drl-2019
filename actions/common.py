@@ -78,10 +78,10 @@ class PlayerControl(actions.base.Action):
 
 class ReturnControlToPlayer(actions.base.Action):
     def action(self) -> int:
-        assert g.player.actor
+        assert g.model.player.actor
         assert self.entity.actor
         self.entity.actor.controlled = False
-        g.player.actor.take_control()
+        g.model.player.actor.take_control()
         return 0
 
 

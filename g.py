@@ -3,9 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import tcod.console
-    import engine.zone
-    import obj.entity
+    import engine.model
 
 console: tcod.console.Console
-player: obj.entity.Entity
-zone: engine.zone.Zone
+model: engine.model.Model

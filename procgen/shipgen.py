@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from typing import Iterator, NamedTuple, Optional, Tuple
 
-import numpy as np
+import numpy as np  # type: ignore
 import scipy.signal  # type: ignore
 
 import engine.zone

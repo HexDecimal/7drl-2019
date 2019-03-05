@@ -21,8 +21,8 @@ class Player(obj.entity.Entity):
 class TestActor(obj.entity.Entity):
     class Actor(component.actor.Actor):
         def act(self) -> actions.Action:
-            if g.player:
-                return actions.Follow(self.owner, g.player)
+            if g.model.player:
+                return actions.Follow(self.owner, g.model.player)
             return actions.Wait(self.owner)
 
     class Graphic(component.graphic.Graphic):
