@@ -39,3 +39,10 @@ metal_wall = Tile(
     walkable=0,
     transparent=False,
 )
+hull = Tile(
+    ch=ord("╬"),
+    fg=(0x50, 0x50, 0x60),
+    bg=(0x70, 0x70, 0x80),
+    walkable=0,
+    transparent=False,
+)

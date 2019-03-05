@@ -10,6 +10,14 @@ import engine.zone
 import tiles
 
 
+class ProcGenException(Exception):
+    pass
+
+
+class NoRoom(ProcGenException):
+    pass
+
+
 class RoomType(NamedTuple):
     priority: float = 0
     floor: tiles.Tile = tiles.metal_floor
@@ -25,6 +33,9 @@ class Ship:
         if seed is None:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)
+        self.generate()
+
+    def generate(self) -> None:
         self.length = 64
         self.half_width = 8
         self.depth = 1
@@ -37,14 +48,22 @@ class Ship:
         self.rooms = np.zeros((self.length, self.width, self.depth),
                               dtype=int, order="F")
         self.room_types = {
-            -1: RoomType(1, tiles.space, tiles.metal_wall),
+            -1: RoomType(1, tiles.space, tiles.hull),
             0: RoomType(0, tiles.metal_floor, tiles.metal_wall),
             1: RoomType(0, tiles.metal_floor._replace(bg=(0x30, 0x30, 0x20)),
                         tiles.metal_wall),
         }
+        self.next_room_id = 2
         self.gen_form()
         self.gen_halls()
         # self.gen_rooms()
+        for size in range(5, 0, -1):
+            try:
+                while True:
+                    self.add_room(self.new_room(), (size, size))
+            except NoRoom:
+                pass
+
         self.finalize()
 
     def gen_form(self) -> None:
@@ -67,6 +86,40 @@ class Ship:
         self.rooms[start_x:end_x, self.half_width, 0] = 1
         self.start_position = (start_x * self.room_width + 1,
                                self.half_width * self.room_height + 1, 0)
+
+    def new_room(self, room_type: Optional[RoomType] = None) -> int:
+        if room_type is None:
+            room_type = RoomType(0, tiles.metal_floor, tiles.metal_wall)
+        self.room_types[self.next_room_id] = room_type
+        self.next_room_id += 1
+        return self.next_room_id - 1
+
+    def add_room(
+        self,
+        room_id: int,
+        size: Tuple[int, int],
+        floor: int = 0,
+    ) -> None:
+        self.rooms[self.get_free_space(size, floor)] = room_id
+
+    def get_free_space(self, size: Tuple[int, int],
+                       floor: int) -> Tuple[slice, slice]:
+        width, height = size
+        room_area = np.zeros((width * 2 - 1, height * 2 - 1), dtype=bool)
+        room_area[:width, :height] = True
+        #  Convolve room_area into self.rooms, values of zero mean this room
+        #  will fit.
+        valid = scipy.signal.convolve(
+            (self.rooms[..., floor] != 0).astype(int),
+            room_area,
+            "same",
+        )[:-width, :-height]
+        valid = (valid == 0).nonzero()
+        if not valid[0].size:
+            raise NoRoom("No space left for room.")
+        i = self.rng.randint(0, len(valid[0]) - 1)
+        x, y = valid[0][i], valid[1][i]
+        return slice(x, x + width), slice(y, y + height)
 
     def gen_rooms(self) -> None:
         i = 2
@@ -116,7 +169,7 @@ class Ship:
 
         def get_merge_tile(*rooms: RoomType) -> tiles.Tile:
             for room in rooms[1:]:
-                if rooms[0] != room:
+                if rooms[0] is not room:
                     break
             else:
                 return rooms[0].floor
