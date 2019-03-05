@@ -15,15 +15,12 @@ class Zone:
     DTYPE: Any = [("tile", tiles.DTYPE)]
     locations: Dict[Tuple[int, int, int], component.location.Location]
 
-    def __init__(self, width: int, height: int, depth: int = 1) -> None:
-        self.width = width
-        self.height = height
-        self.depth = depth
+    def __init__(self, shape: Tuple[int, int, int]) -> None:
+        self.shape = shape
 
         self.camera = (0, 0, 0)
 
-        self.data = np.empty((width, height, depth),
-                             dtype=self.DTYPE, order="F")
+        self.data = np.empty(shape, dtype=self.DTYPE, order="F")
         self.data["tile"] = tiles.metal_wall
         self.data["tile"][1:-1, 1:-1, :] = tiles.metal_floor
 
@@ -74,3 +71,15 @@ class Zone:
         if xyz not in self.locations:
             self.locations[xyz] = component.location.Location(self, xyz)
         return self.locations[xyz]
+
+    @property
+    def width(self) -> int:
+        return self.shape[0]
+
+    @property
+    def height(self) -> int:
+        return self.shape[1]
+
+    @property
+    def depth(self) -> int:
+        return self.shape[2]

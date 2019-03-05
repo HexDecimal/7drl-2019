@@ -7,8 +7,8 @@ import tcod
 
 import g
 import state
-import engine.zone
 import obj.living
+import procgen.shipgen
 
 FONT: Dict[str, Any] = {
     "fontFile": "terminal8x12_gs_ro.png",
@@ -26,10 +26,11 @@ CONFIG: Dict[str, Any] = {
 def main() -> None:
     tcod.console_set_custom_font(**FONT)
     with tcod.console_init_root(**CONFIG) as g.console:
-        g.zone = engine.zone.Zone(100, 100)
-        g.player = obj.living.Player(g.zone[1, 1, 0])
-        obj.living.TestActor(g.zone[50, 1, 0])
-        obj.living.TestRobot(g.zone[3, 3, 0])
+        ship = procgen.shipgen.Ship()
+        g.zone = ship.zone
+        g.player = obj.living.Player(g.zone[ship.start_position])
+        obj.living.TestRobot(g.player.location.get_relative(2, 2, 0))
+        del ship
         state.Game().activate()
 
 
