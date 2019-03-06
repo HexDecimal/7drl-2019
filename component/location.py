@@ -9,12 +9,9 @@ if TYPE_CHECKING:
 
 
 class Location(component.base.Component):
-    # Remove the zone property from Component.
-    zone: engine.zone.Zone = None  # type: ignore
-
     def __init__(self, zone: engine.zone.Zone, xyz: Tuple[int, int, int]):
-        self.zone = zone
-        self.xyz = xyz
+        self._zone = zone
+        self._xyz = xyz
         self.contents: List[obj.entity.Entity] = []
 
     def on_added(self, entity: obj.entity.Entity) -> None:
@@ -42,3 +39,11 @@ class Location(component.base.Component):
     @property
     def data(self) -> Any:
         return self.zone.data[self.xyz]
+
+    @property
+    def xyz(self) -> Tuple[int, int, int]:
+        return self._xyz
+
+    @property
+    def zone(self) -> engine.zone.Zone:
+        return self._zone

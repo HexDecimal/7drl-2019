@@ -5,26 +5,27 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 import component.base
 if TYPE_CHECKING:
     import component.actor
+    import component.container
     import component.graphic
+    import component.item
     import component.location
     import component.verb
 
 
 class Entity:
     location: component.location.Location
-    Actor: Any = component.base.Null
     actor: Optional[component.actor.Actor]
-    Graphic: Any = component.base.Null
+    container: Optional[component.container.Container]
     graphic: Optional[component.graphic.Graphic]
-    Interactable: Any = component.base.Null
     interactable: Optional[component.verb.Interactable]
+    item: Optional[component.item.Item]
 
     def __init__(self, location: component.location.Location) -> None:
         self._components: Dict[str, component.base.Component] = {}
         self.location = location
-        for annotation in self.__class__.__annotations__:
-            if annotation[0].isupper():
-                setattr(self, annotation.lower(), getattr(self, annotation)())
+        for attr in dir(self):
+            if attr[0].isupper():
+                setattr(self, attr.lower(), getattr(self, attr)())
 
     def destroy(self) -> None:
         """Unlink this entity from the world."""

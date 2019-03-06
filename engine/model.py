@@ -4,6 +4,7 @@ from typing import Optional, TYPE_CHECKING
 
 import procgen.shipgen
 import obj.living
+import obj.item
 if TYPE_CHECKING:
     import engine.zone
     import obj.entity
@@ -18,6 +19,7 @@ class Model:
         self.zone = ship.zone
         self.player = obj.living.Player(self.zone[ship.start_position])
         obj.living.TestRobot(self.player.location.get_relative(2, 2, 0))
+        obj.item.Item(self.player.location.get_relative(1, 1, 0))
 
     @property
     def controlled(self) -> Optional[obj.entity.Entity]:

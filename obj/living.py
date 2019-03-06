@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import actions
 import component.actor
+import component.container
 import component.graphic
 import component.verb
 import g
@@ -12,10 +13,14 @@ class Player(obj.entity.Entity):
     class Actor(component.actor.Actor):
         controlled = True
 
+    class Container(component.container.Container):
+        pass
+
     class Graphic(component.graphic.Graphic):
         CH = ord("@")
 
-    Interactable = component.verb.TakeControlInteractable
+    class Interactable(component.verb.TakeControlInteractable):
+        pass
 
 
 class TestActor(obj.entity.Entity):
@@ -34,7 +39,11 @@ class TestRobot(obj.entity.Entity):
         def act(self) -> actions.Action:
             return actions.Standby(self.owner)
 
+    class Container(component.container.Container):
+        pass
+
     class Graphic(component.graphic.Graphic):
         CH = ord("R")
 
-    Interactable = component.verb.TakeControlInteractable
+    class Interactable(component.verb.TakeControlInteractable):
+        pass

@@ -76,6 +76,14 @@ class Game(State):
         ord("u"): (1, -1),
         ord("n"): (1, 1),
     }
+    CANCEL_KEYS = [
+        tcod.event.K_BACKSPACE,
+        tcod.event.K_ESCAPE,
+    ]
+    PICKUP_KEYS = [
+        ord("g"),
+        ord(","),
+    ]
 
     def on_enter(self) -> None:
         g.model.zone.simulate()
@@ -101,8 +109,10 @@ class Game(State):
             actions.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
         elif event.sym in self.WAIT_KEYS:
             actions.Wait(player).invoke()
-        elif event.sym == tcod.event.K_BACKSPACE:
+        elif event.sym in self.CANCEL_KEYS:
             actions.ReturnControlToPlayer(player).invoke()
+        elif event.sym in self.PICKUP_KEYS:
+            actions.PickupGeneral(player).invoke()
         else:
             print(event)
         g.model.zone.simulate()
