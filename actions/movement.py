@@ -20,12 +20,13 @@ class MoveTo(actions.base.LocationAction):
         return self
 
     def action(self) -> int:
+        assert self.entity.character
         old_xyz = self.entity.location.xyz
         new_xyz = self.location.xyz
         self.entity.location = self.location
         if old_xyz[0] - new_xyz[0] and old_xyz[1] - new_xyz[1]:
-            return 150
-        return 100
+            return self.entity.character.move_speed * 3 // 2
+        return self.entity.character.move_speed
 
 
 class MoveBy(actions.base.BumpAction):

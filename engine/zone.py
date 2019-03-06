@@ -6,6 +6,7 @@ import numpy as np  # type: ignore
 import tcod
 import tqueue
 
+import g
 import obj.entity
 import component.location
 import tiles
@@ -33,6 +34,8 @@ class Zone:
         while not self.player:
             ticket = self.tqueue.next()
             ticket.value(ticket)
+            if not g.model.player.actor:
+                raise SystemExit("Player has died.")
         assert self.player.actor
         self.player.actor.action = None  # Clear PlayerControl action.
 

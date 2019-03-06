@@ -36,6 +36,17 @@ class Location(component.base.Component):
         """Return a location relative to this one."""
         return self.zone[self.xyz[0] + x, self.xyz[1] + y, self.xyz[2] + z]
 
+    def is_adjacent(self, other: Location) -> bool:
+        """Return True if this location is at most one tile away from `other`.
+        """
+        if self.xyz[2] != other.xyz[2]:
+            return False
+        if abs(self.xyz[0] - other.xyz[0]) > 1:
+            return False
+        if abs(self.xyz[1] - other.xyz[1]) > 1:
+            return False
+        return True
+
     @property
     def data(self) -> Any:
         return self.zone.data[self.xyz]

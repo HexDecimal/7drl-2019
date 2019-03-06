@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
+import g
 if TYPE_CHECKING:
     import obj.entity
     import engine.zone
+    import engine.model
 
 
 class Null:
@@ -27,6 +29,10 @@ class Component:
 
     def on_destroy(self, entity: obj.entity.Entity) -> None:
         """Owner entity is being destructed."""
+
+    @property
+    def model(self) -> engine.model.Model:
+        return g.model
 
 
 class OwnedComponent(Component):

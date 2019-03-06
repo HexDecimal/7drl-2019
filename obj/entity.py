@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 import component.base
 if TYPE_CHECKING:
     import component.actor
+    import component.character
     import component.container
     import component.graphic
     import component.item
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
 class Entity:
     location: component.location.Location
     actor: Optional[component.actor.Actor]
+    character: Optional[component.character.Character]
     container: Optional[component.container.Container]
     graphic: Optional[component.graphic.Graphic]
     interactable: Optional[component.verb.Interactable]

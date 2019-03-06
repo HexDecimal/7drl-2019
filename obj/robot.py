@@ -9,29 +9,19 @@ import component.verb
 import obj.entity
 
 
-class Human(obj.entity.Entity):
+class Robot(obj.entity.Entity):
     class Actor(component.actor.Actor):
-        pass
+        def act(self) -> actions.Action:
+            return actions.Standby(self.owner)
 
     class Character(component.character.Character):
-        name = "human"
+        name = "robot"
 
     class Container(component.container.Container):
         pass
 
     class Graphic(component.graphic.Graphic):
-        CH = ord("U")
-
-
-class Player(Human):
-    class Actor(Human.Actor):
-        controlled = True
-
-    class Character(Human.Character):
-        name = "you"
-
-    class Graphic(Human.Graphic):
-        CH = ord("@")
+        CH = ord("R")
 
     class Interactable(component.verb.TakeControlInteractable):
         pass

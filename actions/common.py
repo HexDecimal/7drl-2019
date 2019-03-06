@@ -1,33 +1,16 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional, TYPE_CHECKING
+from typing import Tuple, Optional
 
 import actions.base
+import actions.combat
 import actions.movement
 import obj.entity
-import component.graphic
-if TYPE_CHECKING:
-    import component.location
 
 
 class Wait(actions.base.Action):
     def action(self) -> int:
         return 100
-
-
-class Attack(actions.base.EntityAction):
-    def action(self) -> int:
-        self.target.actor = None
-        self.target.graphic = component.graphic.Graphic(ord('%'), (63, 63, 63))
-        return 100
-
-
-class BumpAttack(actions.base.BumpAction):
-    def poll(self) -> Optional[actions.base.Action]:
-        for target in self.destination.contents:
-            if target.actor:
-                return Attack(self.entity, target).poll()
-        return None
 
 
 class Interact(actions.base.EntityAction):
@@ -54,7 +37,11 @@ class Bump(actions.base.Action):
         super().__init__(entity)
         self.direction = direction
 
-    ACTIONS = (actions.movement.MoveBy, BumpInteract, BumpAttack)
+    ACTIONS = (
+        actions.movement.MoveBy,
+        BumpInteract,
+        actions.combat.BumpAttack,
+    )
 
     def poll(self) -> Optional[actions.base.Action]:
         for action_type in self.ACTIONS:
