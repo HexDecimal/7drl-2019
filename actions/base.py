@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional, TYPE_CHECKING
+from typing import Any, Tuple, Optional, TYPE_CHECKING
 
+import g
 import obj.entity
 import component.graphic
 if TYPE_CHECKING:
@@ -37,9 +38,21 @@ class Action:
         """
         raise NotImplementedError()
 
+    def report(self, string: str, **format: Any) -> None:
+        FORMAT = {
+            "you": "you",
+            "You": "You",
+        }
+        format.update(FORMAT)
+        self.model.log.append(string.format(**format))
+
     @property
     def zone(self) -> engine.zone.Zone:
         return self.entity.location.zone
+
+    @property
+    def model(self) -> engine.model.Model:
+        return g.model
 
 
 class LocationAction(Action):

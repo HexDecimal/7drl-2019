@@ -15,7 +15,9 @@ class PickupItem(EntityAction):
 
     def action(self) -> Optional[int]:
         assert self.entity.container
+        assert self.target.item
         self.target.location = self.entity.container
+        self.report("{You} pick up the {item}.", item=self.target.item.name)
         return 100
 
 

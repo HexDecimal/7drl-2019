@@ -94,13 +94,30 @@ class Game(State):
         super().on_draw()
 
     def draw_ui(self) -> None:
-        ui_console = tcod.console.Console(20, g.console.height, order="F")
+        ui_console = tcod.console.Console(20, 20, order="F")
         ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
+        ui_console.draw_rect(1, ui_console.height - 1,
+                             ui_console.width, 1, ord("─"))
+        ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ord("└"))
         ui_console.print(1, 0, f"Time: {g.model.zone.tqueue.time}")
         ui_console.print(1, 1, f"Pos: {g.model.player.location.xyz}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0,
                         bg_alpha=0.9)
+
+        log_console = tcod.console.Console(80, 10, order="F")
+        log_console.draw_rect(0, 0, log_console.width, 1, ord("─"))
+        log_console.draw_rect(log_console.width - 1, 1,
+                              1, log_console.height, ord("│"))
+        log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
+        y = 1
+        for log in g.model.log:
+            y += log_console.print_rect(0, y, 0, 0, log)
+            if y >= log_console.height:
+                break
+
+        log_console.blit(g.console, 0, g.console.height - log_console.height,
+                         bg_alpha=0.9)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         assert g.model.controlled

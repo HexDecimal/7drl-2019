@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 import procgen.shipgen
 import obj.living
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class Model:
     zone: engine.zone.Zone  # The active zone.
     player: obj.entity.Entity  # The primary player entity.
+    log: List[str]
 
     def __init__(self) -> None:
         ship = procgen.shipgen.Ship()
@@ -20,6 +21,7 @@ class Model:
         self.player = obj.living.Player(self.zone[ship.start_position])
         obj.living.TestRobot(self.player.location.get_relative(2, 2, 0))
         obj.item.Item(self.player.location.get_relative(1, 1, 0))
+        self.log = []
 
     @property
     def controlled(self) -> Optional[obj.entity.Entity]:

@@ -4,7 +4,6 @@ from typing import Tuple, Optional, TYPE_CHECKING
 
 import actions.base
 import actions.movement
-import g
 import obj.entity
 import component.graphic
 if TYPE_CHECKING:
@@ -32,10 +31,10 @@ class BumpAttack(actions.base.BumpAction):
 
 
 class Interact(actions.base.EntityAction):
-    def action(self) -> int:
-        assert self.target.interactable
-        self.target.interactable.interaction(self.entity)
-        return 0
+    def poll(self) -> Optional[actions.base.Action]:
+        if not self.target.interactable:
+            return None
+        return self.target.interactable.interaction(self.entity)
 
 
 class BumpInteract(actions.base.BumpAction):
@@ -74,15 +73,6 @@ class PlayerControl(actions.base.Action):
         self.entity.location.zone.camera = self.entity.location.xyz
         self.entity.location.zone.player = self.entity
         return None  # Further actions will be pending.
-
-
-class ReturnControlToPlayer(actions.base.Action):
-    def action(self) -> int:
-        assert g.model.player.actor
-        assert self.entity.actor
-        self.entity.actor.controlled = False
-        g.model.player.actor.take_control()
-        return 0
 
 
 class Standby(actions.base.Action):
