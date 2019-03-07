@@ -101,6 +101,10 @@ class Game(State):
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ord("└"))
         ui_console.print(1, 0, f"Time: {g.model.zone.tqueue.time}")
         ui_console.print(1, 1, f"Pos: {g.model.player.location.xyz}")
+        room_name = g.model.zone.room_types[
+            g.model.zone.data["room_id"][g.model.player.location.xyz]
+        ]
+        ui_console.print(1, 2, f"{room_name}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0,
                         bg_alpha=0.9)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
@@ -10,11 +10,14 @@ import g
 import obj.entity
 import component.location
 import tiles
+if TYPE_CHECKING:
+    import procgen.shipgen
 
 
 class Zone:
-    DTYPE: Any = [("tile", tiles.DTYPE)]
+    DTYPE: Any = [("tile", tiles.DTYPE), ("room_id", np.int16)]
     locations: Dict[Tuple[int, int, int], component.location.Location]
+    room_types: Dict[int, procgen.shipgen.RoomType]
 
     def __init__(self, shape: Tuple[int, int, int]) -> None:
         self.shape = shape

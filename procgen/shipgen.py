@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import sys
 
+import itertools
 import random
-from typing import Iterator, NamedTuple, Optional, Tuple
+from typing import Any, Iterator, List, Optional, Tuple
 
 import numpy as np  # type: ignore
 import scipy.signal  # type: ignore
@@ -12,6 +13,15 @@ import tcod
 from procgen.growingtree import AbstractGrowingTree
 import engine.zone
 import tiles
+import obj.item
+
+
+def np_sample(
+    rng: random.Random, array: np.array, k: int,
+) -> List[Tuple[Any, ...]]:
+    if not np.any(array):
+        return []
+    return rng.sample(list(zip(*array.nonzero())), k)
 
 
 class ProcGenException(Exception):
@@ -22,10 +32,43 @@ class NoRoom(ProcGenException):
     pass
 
 
-class RoomType(NamedTuple):
+class RoomType:
     priority: float = 0
+    name: str = "<room>"
     floor: tiles.Tile = tiles.metal_floor
     wall: tiles.Tile = tiles.metal_wall
+    min_size: Tuple[int, int] = (2, 2)
+    max_size: Tuple[int, int] = (4, 4)
+
+    def __lt__(self, other: RoomType) -> bool:
+        return self.priority < other.priority
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Corridor(RoomType):
+    name = "Corridor"
+    floor = tiles.metal_floor._replace(bg=(0x30, 0x30, 0x20))
+    wall = tiles.metal_wall
+    min_size = (1, 1)
+
+
+class Space(RoomType):
+    priority = 1
+    name = "Space"
+    floor = tiles.space
+    wall = tiles.hull
+    min_size = (1, 1)
+
+
+class Hangar(RoomType):
+    priority = 1
+    name = "Hangar"
+    floor = tiles.metal_floor._replace(bg=(0x00, 0x00, 0x20))
+    wall = tiles.hull
+    min_size = (8, 4)
+    max_size = (8, 4)
 
 
 class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
@@ -167,19 +210,19 @@ class Ship:
         self.rooms = np.zeros((self.length, self.width, self.depth),
                               dtype=int, order="F")
         self.room_types = {
-            -1: RoomType(1, tiles.space, tiles.hull),
-            0: RoomType(0, tiles.metal_floor, tiles.metal_wall),
-            1: RoomType(0, tiles.metal_floor._replace(bg=(0x30, 0x30, 0x20)),
-                        tiles.metal_wall),
+            -1: Space(),
+            0: RoomType(),
+            1: Corridor(),
         }
         self.next_room_id = 2
         self.gen_form()
         self.gen_halls()
         # self.gen_rooms()
+        self.add_new_room(Hangar(), 0)
         for size in range(5, 0, -1):
             try:
                 while True:
-                    self.add_room(self.new_room(), (size, size))
+                    self.add_new_room(RoomType())
             except NoRoom:
                 pass
         self.rooms[self.rooms == 0] = 1
@@ -210,7 +253,7 @@ class Ship:
 
     def new_room(self, room_type: Optional[RoomType] = None) -> int:
         if room_type is None:
-            room_type = RoomType(0, tiles.metal_floor, tiles.metal_wall)
+            room_type = RoomType()
         self.room_types[self.next_room_id] = room_type
         self.next_room_id += 1
         return self.next_room_id - 1
@@ -222,6 +265,25 @@ class Ship:
         floor: int = 0,
     ) -> None:
         self.rooms[self.get_free_space(size, floor)] = room_id
+
+    def add_new_room(self, room: RoomType, floor: int = 0) -> None:
+        sizes = list(
+            itertools.product(
+                range(room.min_size[0], room.max_size[0] + 1),
+                range(room.min_size[1], room.max_size[1] + 1),
+            )
+        )
+        self.rng.shuffle(sizes)
+        for size in sizes:
+            try:
+                self.rooms[self.get_free_space(size, 0)] = self.next_room_id
+                break
+            except NoRoom:
+                pass
+        else:
+            raise NoRoom(f"Could not fit {room}.")
+        self.room_types[self.next_room_id] = room
+        self.next_room_id += 1
 
     def get_free_space(self, size: Tuple[int, int],
                        floor: int) -> Tuple[slice, slice]:
@@ -318,7 +380,21 @@ class Ship:
             self.zone.data["tile"][left+1:right, top+1:bottom, cz] = \
                 room_type.floor
 
+        self.zone.data["room_id"] = -1
+        self.zone.data["room_id"][:-1, :-1, :] = np.kron(
+            self.rooms, np.ones((self.room_width, self.room_height, 1))
+        )
+        self.zone.room_types = self.room_types
+
         ShipRoomConntector(self).generate()
+
+        for room_id, room in self.room_types.items():
+            if room_id == -1:
+                continue
+            area = self.zone.data["room_id"] == room_id
+            area &= self.zone.data["tile"]["walkable"] != 0
+            for xyz in np_sample(self.rng, area, 1):
+                obj.item.Item(self.zone[xyz])  # type: ignore
 
     def show(self) -> str:
         def icon(x: int, y: int) -> str:
