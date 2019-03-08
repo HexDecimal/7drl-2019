@@ -4,7 +4,7 @@ import sys
 
 import itertools
 import random
-from typing import Any, Iterator, List, Optional, Tuple
+from typing import Any, Iterator, List, Optional, Set, Tuple
 
 import numpy as np  # type: ignore
 import scipy.signal  # type: ignore
@@ -13,15 +13,11 @@ import tcod
 from procgen.growingtree import AbstractGrowingTree
 import engine.zone
 import tiles
+import obj.door
 import obj.item
-
-
-def np_sample(
-    rng: random.Random, array: np.array, k: int,
-) -> List[Tuple[Any, ...]]:
-    if not np.any(array):
-        return []
-    return rng.sample(list(zip(*array.nonzero())), k)
+import obj.living
+import obj.machine
+import obj.robot
 
 
 class ProcGenException(Exception):
@@ -46,8 +42,18 @@ class RoomType:
     def __str__(self) -> str:
         return self.name
 
+    def get_area(self, room_id: int, ship: Ship) -> np.array:
+        area = ship.zone.data["room_id"] == room_id
+        area &= ship.zone.data["tile"]["walkable"] != 0
+        return area
+
+    def finalize(self, room_id: int, ship: Ship) -> None:
+        for xyz in ship.np_sample(self.get_area(room_id, ship), 1):
+            obj.item.Item(ship.zone[xyz])  # type: ignore
+
 
 class Corridor(RoomType):
+    priority = -1
     name = "Corridor"
     floor = tiles.metal_floor._replace(bg=(0x30, 0x30, 0x20))
     wall = tiles.metal_wall
@@ -55,20 +61,63 @@ class Corridor(RoomType):
 
 
 class Space(RoomType):
-    priority = 1
+    priority = 100
     name = "Space"
     floor = tiles.space
     wall = tiles.hull
     min_size = (1, 1)
+
+    def finalize(self, room_id: int, ship: Ship) -> None:
+        pass
 
 
 class Hangar(RoomType):
     priority = 1
     name = "Hangar"
     floor = tiles.metal_floor._replace(bg=(0x00, 0x00, 0x20))
-    wall = tiles.hull
+    wall = tiles.reinforced_wall
     min_size = (8, 4)
     max_size = (8, 4)
+
+    def finalize(self, room_id: int, ship: Ship) -> None:
+        pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
+        ship.player = obj.living.Player(ship.zone[pos1])  # type: ignore
+        obj.robot.Robot(ship.zone[pos2])  # type: ignore
+
+
+class BasePowerRoom(RoomType):
+    floor = RoomType.floor._replace(bg=(0x30, 0x30, 0x00))
+    min_size = (2, 2)
+    max_size = (3, 3)
+
+
+class DriveCore(BasePowerRoom):
+    priority = 1
+    name = "Drive Core"
+    wall = tiles.reinforced_wall
+    min_size = (3, 3)
+    max_size = (4, 4)
+
+    def finalize(self, room_id: int, ship: Ship) -> None:
+        xyz, = ship.np_sample(self.get_area(room_id, ship), 1)
+        obj.machine.DriveCore(ship.zone[xyz])  # type: ignore
+
+
+class Solars(BasePowerRoom):
+    name = "Solars"
+
+
+class Nuclear(BasePowerRoom):
+    priority = 1
+    name = "Nuclear"
+    wall = tiles.reinforced_wall
+
+
+class Bridge(RoomType):
+    name = "Bridge"
+    floor = RoomType.floor._replace(bg=(0x30, 0x30, 0x30))
+    min_size = (2, 2)
+    max_size = (4, 4)
 
 
 class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
@@ -79,6 +128,8 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
         self.visited = ship.rooms == -1
         self.visited[self.ship.root_node] = True
         super().__init__()
+        # Connected rooms: Tuple[axis, index, room_id1, room_id2]
+        self.connected: Set[Tuple[int, int, int, int]] = set()
         self.visit(self.ship.root_node, None)
 
     def grow(self) -> None:
@@ -118,6 +169,24 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
         nodes, weights = zip(*self.get_neighbors(node))
         return self.ship.rng.choices(list(nodes), weights)[0]  # type: ignore
 
+    def get_connection(
+        self,
+        node1: Tuple[int, int, int],
+        node2: Tuple[int, int, int],
+    ) -> Tuple[int, int, int, int]:
+        """Returns Tuple[axis, index, room_id1, room_id2]."""
+        node1, node2 = sorted((node1, node2))
+        assert node1[2] == node2[2]
+        if node1[1] == node2[1]:
+            assert node1[0] != node2[0]
+            axis = 0
+        else:
+            assert node1[0] == node2[0]
+            assert node1[1] != node2[1]
+            axis = 1
+        return (axis, node1[axis],
+                self.ship.rooms[node1], self.ship.rooms[node2])
+
     def get_neighbors(
         self, node: Tuple[int, int, int],
     ) -> Iterator[Tuple[Tuple[int, int, int], int]]:
@@ -129,8 +198,10 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
                 continue
             if self.visited[neighbor]:
                 continue
+            # if self.get_connection(node, neighbor) in self.connected:
+            #     continue
             if self.ship.rooms[node] == self.ship.rooms[neighbor]:
-                yield neighbor, 8
+                yield neighbor, 500
             yield neighbor, 1
 
     def get_room_type(self, node: Tuple[int, int, int]) -> RoomType:
@@ -149,8 +220,12 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
             return
         if prev[2] != node[2]:
             return
-        if prev > node:  # Make sure prev is on the upper-left side of node.
-            prev, node = node, prev
+        # Make sure prev is on the upper-left side of node.
+        prev, node = sorted((prev, node))
+
+        connection = self.get_connection(prev, node)
+        # assert connection not in self.connected
+        self.connected.add(connection)
 
         if "--debug" in sys.argv:
             self.connect_rooms_debug(prev, node)
@@ -168,10 +243,13 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
             assert room_a[1] == room_b[1]
             door_y += self.ship.rng.randint(1, self.ship.room_height - 1)
         door = door_x, door_y, room_b[2]
+        if self.ship.zone.data["tile"]["walkable"][door]:
+            return
         self.ship.zone.data["tile"][door] = max(
             self.ship.room_types[self.ship.rooms[room_a]],
             self.ship.room_types[self.ship.rooms[room_b]],
         ).floor
+        obj.door.AutoDoor(self.ship.zone[door])
 
     def connect_rooms_debug(
         self, room_a: Tuple[int, int, int], room_b: Tuple[int, int, int],
@@ -188,6 +266,7 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
 
 class Ship:
     start_position: Tuple[int, int, int]
+    player: obj.entity.Entity
     room_width = 4
     room_height = 4
 
@@ -196,6 +275,11 @@ class Ship:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)
         self.generate()
+
+    def np_sample(self, array: np.array, k: int) -> List[Tuple[Any, ...]]:
+        if not np.any(array):
+            return []
+        return self.rng.sample(list(zip(*array.nonzero())), k)
 
     def generate(self) -> None:
         self.length = 64
@@ -217,14 +301,20 @@ class Ship:
         self.next_room_id = 2
         self.gen_form()
         self.gen_halls()
-        # self.gen_rooms()
-        self.add_new_room(Hangar(), 0)
-        for size in range(5, 0, -1):
-            try:
-                while True:
-                    self.add_new_room(RoomType())
-            except NoRoom:
-                pass
+        VITAL_ROOMS = [
+            Hangar,
+            DriveCore,
+            Solars,
+            Nuclear,
+            Bridge,
+        ]
+        for room_cls in VITAL_ROOMS:
+            self.add_new_room(room_cls(), 0)
+        try:
+            while True:
+                self.add_new_room(RoomType())
+        except NoRoom:
+            pass
         self.rooms[self.rooms == 0] = 1
 
         self.finalize()
@@ -250,21 +340,6 @@ class Ship:
         self.root_node = start_x, self.half_width, 0
         self.start_position = (start_x * self.room_width + 1,
                                self.half_width * self.room_height + 1, 0)
-
-    def new_room(self, room_type: Optional[RoomType] = None) -> int:
-        if room_type is None:
-            room_type = RoomType()
-        self.room_types[self.next_room_id] = room_type
-        self.next_room_id += 1
-        return self.next_room_id - 1
-
-    def add_room(
-        self,
-        room_id: int,
-        size: Tuple[int, int],
-        floor: int = 0,
-    ) -> None:
-        self.rooms[self.get_free_space(size, floor)] = room_id
 
     def add_new_room(self, room: RoomType, floor: int = 0) -> None:
         sizes = list(
@@ -303,21 +378,6 @@ class Ship:
         x, y = self.rng.choice(valid)
         assert (self.rooms[x:x+width, y:y+height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
-
-    def gen_rooms(self) -> None:
-        i = 2
-        sizes = [(3, 3), (2, 3), (3, 2), (2, 2,), (1, 2), (2, 1), (1, 1)]
-        for y in range(self.rooms.shape[1]):
-            for x in range(self.rooms.shape[0]):
-                if self.rooms[x, y, 0] != 0:
-                    continue
-                self.rng.shuffle(sizes)
-                for width, height in sizes:
-                    area = self.rooms[x:x+width, y:y+height, 0]
-                    if (area != 0).any():
-                        continue
-                    area[...] = i
-                i += 1
 
     def get_unclaimed_cell(self) -> Tuple[int, int]:
         nz = self.get_unclaimed_cells().nonzero()
@@ -389,12 +449,7 @@ class Ship:
         ShipRoomConntector(self).generate()
 
         for room_id, room in self.room_types.items():
-            if room_id == -1:
-                continue
-            area = self.zone.data["room_id"] == room_id
-            area &= self.zone.data["tile"]["walkable"] != 0
-            for xyz in np_sample(self.rng, area, 1):
-                obj.item.Item(self.zone[xyz])  # type: ignore
+            room.finalize(room_id, self)
 
     def show(self) -> str:
         def icon(x: int, y: int) -> str:

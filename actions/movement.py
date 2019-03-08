@@ -15,18 +15,18 @@ class MoveTo(actions.base.LocationAction):
         if not self.location.data["tile"]["walkable"]:
             return None
         for entity in self.location.contents:
-            if entity.actor:
+            if entity.physicality and entity.physicality.blocking:
                 return None
         return self
 
     def action(self) -> int:
-        assert self.entity.character
+        assert self.entity.physicality
         old_xyz = self.entity.location.xyz
         new_xyz = self.location.xyz
         self.entity.location = self.location
         if old_xyz[0] - new_xyz[0] and old_xyz[1] - new_xyz[1]:
-            return self.entity.character.move_speed * 3 // 2
-        return self.entity.character.move_speed
+            return self.entity.physicality.move_speed * 3 // 2
+        return self.entity.physicality.move_speed
 
 
 class MoveBy(actions.base.BumpAction):

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import component.actor
-import component.character
 import component.container
 import component.graphic
+import component.physicality
 import component.verb
 import obj.entity
 
@@ -12,7 +12,7 @@ class Human(obj.entity.Entity):
     class Actor(component.actor.Actor):
         pass
 
-    class Character(component.character.Character):
+    class Physicality(component.physicality.Physicality):
         name = "human"
 
     class Container(component.container.Container):
@@ -26,7 +26,7 @@ class Player(Human):
     class Actor(Human.Actor):
         controlled = True
 
-    class Character(Human.Character):
+    class Physicality(Human.Physicality):
         name = "you"
 
     class Graphic(Human.Graphic):

@@ -26,15 +26,22 @@ space = Tile(
     transparent=True,
 )
 
-metal_floor = Tile(
+floor = metal_floor = Tile(
     ch=ord("░"),
     fg=(0x28, 0x28, 0x30),
     bg=(0, 0, 0),
     walkable=1,
     transparent=True,
 )
-metal_wall = Tile(
+wall = metal_wall = Tile(
     ch=ord(" "),
+    bg=(0x70, 0x70, 0x80),
+    walkable=0,
+    transparent=False,
+)
+reinforced_wall = Tile(
+    ch=ord("="),
+    fg=(0x50, 0x50, 0x60),
     bg=(0x70, 0x70, 0x80),
     walkable=0,
     transparent=False,

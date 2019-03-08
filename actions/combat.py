@@ -9,20 +9,20 @@ import component.graphic
 
 class Attack(actions.base.EntityAction):
     def poll(self) -> Optional[Attack]:
-        if not self.entity.character:
+        if not self.entity.physicality:
             return None
-        if not self.target.character:
+        if not self.target.physicality:
             return None
         if not self.entity.location.is_adjacent(self.target.location):
             return None
         return self
 
     def action(self) -> int:
-        assert self.entity.character
-        assert self.target.character
+        assert self.entity.physicality
+        assert self.target.physicality
         self.target.actor = None
         self.target.graphic = component.graphic.Graphic(ord('%'), (63, 63, 63))
-        return self.entity.character.attack_speed
+        return self.entity.physicality.attack_speed
 
 
 class BumpAttack(actions.base.BumpAction):

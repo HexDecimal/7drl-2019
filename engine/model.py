@@ -20,9 +20,7 @@ class Model:
     def __init__(self) -> None:
         ship = procgen.shipgen.Ship()
         self.zone = ship.zone
-        self.player = obj.living.Player(self.zone[ship.start_position])
-        obj.robot.Robot(self.player.location.get_relative(2, 2, 0))
-        # obj.monster.Monster(self.player.location.get_relative(10, 2, 0))
+        self.player = ship.player
         self.log = []
 
     @property
