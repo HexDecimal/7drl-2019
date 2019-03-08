@@ -99,8 +99,9 @@ class DriveCore(BasePowerRoom):
     max_size = (4, 4)
 
     def finalize(self, room_id: int, ship: Ship) -> None:
-        xyz, = ship.np_sample(self.get_area(room_id, ship), 1)
-        obj.machine.DriveCore(ship.zone[xyz])  # type: ignore
+        pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
+        obj.machine.DriveCore(ship.zone[pos1])  # type: ignore
+        obj.item.SpareCore(ship.zone[pos2])  # type: ignore
 
 
 class Solars(BasePowerRoom):

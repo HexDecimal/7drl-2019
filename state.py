@@ -47,6 +47,7 @@ class Game(State):
     WAIT_KEYS = (
         tcod.event.K_PERIOD,
         tcod.event.K_KP_5,
+        tcod.event.K_CLEAR,
     )
     DIR_KEYS = {
         tcod.event.K_LEFT: (-1, 0),
@@ -91,7 +92,7 @@ class Game(State):
     def on_draw(self) -> None:
         g.model.zone.render(g.console)
         self.draw_ui()
-        super().on_draw()
+        tcod.console_flush()
 
     def draw_ui(self) -> None:
         ui_console = tcod.console.Console(20, 20, order="F")
@@ -114,11 +115,12 @@ class Game(State):
         log_console.draw_rect(log_console.width - 1, 1,
                               1, log_console.height, ord("│"))
         log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
-        y = 1
-        for log in g.model.log:
-            y += log_console.print_rect(0, y, 0, 0, log)
-            if y >= log_console.height:
+        y = log_console.height
+        for log in reversed(g.model.log):
+            y -= log_console.get_height_rect(0, y, 0, 0, log)
+            if y < 0:
                 break
+            log_console.print_rect(0, y, 0, 0, log)
 
         log_console.blit(g.console, 0, g.console.height - log_console.height,
                          bg_alpha=0.9)

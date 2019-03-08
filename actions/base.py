@@ -43,8 +43,7 @@ class Action:
             "you": "you",
             "You": "You",
         }
-        format.update(FORMAT)
-        self.model.log.append(string.format(**format))
+        self.model.log.append(string.format(**FORMAT, **format))
 
     @property
     def zone(self) -> engine.zone.Zone:

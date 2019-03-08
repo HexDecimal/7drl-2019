@@ -18,7 +18,7 @@ class Model:
     log: List[str]
 
     def __init__(self) -> None:
-        ship = procgen.shipgen.Ship()
+        ship = procgen.shipgen.Ship(1)
         self.zone = ship.zone
         self.player = ship.player
         self.log = []
