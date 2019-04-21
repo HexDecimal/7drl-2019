@@ -19,8 +19,10 @@ T = TypeVar("T", bound="component.base.Component")
 class Ensure(Generic[T]):
     __slots__ = "attr",
 
-    def __init__(self, attr: str):
-        self.attr = attr
+    attr: str
+
+    def __set_name__(self, owner: Any, name: str) -> None:
+        self.attr = name
 
     def __get__(self, obj: Entity, objtype: Any = None) -> T:
         return obj._components[self.attr]  # type: ignore
@@ -58,14 +60,13 @@ class Option(Ensure[T]):
 
 class Entity:
     __slots__ = "_components",
-    location: Ensure[component.location.Location] = Ensure("location")
-    actor: Option[component.actor.Actor] = Option("actor")
-    container: Option[component.container.Container] = Option("container")
-    graphic: Option[component.graphic.Graphic] = Option("graphic")
-    physicality: Option[component.physicality.Physicality] = \
-        Option("physicality")
-    interactable: Option[component.verb.Interactable] = Option("interactable")
-    item: Option[component.item.Item] = Option("item")
+    location: Ensure[component.location.Location] = Ensure()
+    actor: Option[component.actor.Actor] = Option()
+    container: Option[component.container.Container] = Option()
+    graphic: Option[component.graphic.Graphic] = Option()
+    physicality: Option[component.physicality.Physicality] = Option()
+    interactable: Option[component.verb.Interactable] = Option()
+    item: Option[component.item.Item] = Option()
 
     def __init__(self, location: component.location.Location) -> None:
         self._components: Dict[str, component.base.Component] = {}
