@@ -16,8 +16,8 @@ class Composite:
         return self._components.get(key, ())
 
     def __contains__(self, item: Any) -> bool:
-        """Return True if this item is in this or is a class handled by this."""
-        return item in self._components or item in self._components[item.__class__]
+        """Return True if `item` is in or is a class handled by self."""
+        return item in self._components or item in self[item.__class__]
 
     def add(self, obj: Any) -> None:
         """Add a component to this composite object."""
@@ -31,3 +31,8 @@ class Composite:
         """Remove a component from this composite object."""
         for cls in obj.__class__.__mro__:
             self._components[cls].remove(obj)
+            if not self._components[cls]:
+                del self._components[cls]
+
+
+__all__ = ("Composite",)
