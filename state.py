@@ -117,10 +117,10 @@ class Game(State):
         log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
         y = log_console.height
         for log in reversed(g.model.log):
-            y -= log_console.get_height_rect(0, y, 0, 0, log)
+            y -= tcod.console.get_height_rect(log_console.width, log)
             if y < 0:
                 break
-            log_console.print_rect(0, y, 0, 0, log)
+            log_console.print_box(0, y, 0, 0, log)
 
         log_console.blit(g.console, 0, g.console.height - log_console.height,
                          bg_alpha=0.9)

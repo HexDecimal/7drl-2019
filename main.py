@@ -19,6 +19,8 @@ CONFIG: Dict[str, Any] = {
     "h": 500 // 12,
     "title": None,
     "order": "F",
+    "renderer": tcod.RENDERER_SDL2,
+    "vsync": True,
 }
 
 
