@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, List, Tuple, TYPE_CHECKING
 
 import component.base
+
 if TYPE_CHECKING:
     import obj.entity
     import engine.zone
@@ -17,8 +18,6 @@ class Location(component.base.Component):
     def on_added(self, entity: obj.entity.Entity) -> None:
         assert entity not in self.contents
         self.contents.append(entity)
-        if entity.actor:
-            entity.actor.schedule(0)
 
     def on_replace(
         self,
@@ -28,6 +27,10 @@ class Location(component.base.Component):
         assert self.zone is old.zone
         old.contents.remove(entity)
         self.contents.append(entity)
+
+    def on_remove(self, entity: obj.entity.Entity) -> None:
+        assert entity in self.contents
+        self.contents.remove(entity)
 
     def on_destroy(self, entity: obj.entity.Entity) -> None:
         self.contents.remove(entity)

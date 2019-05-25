@@ -48,6 +48,6 @@ class DriveCore(Machine):
                 core = self.get_core()
                 assert core
                 assert self.target.container
-                core.location = self.target.container
+                core.location = self.target.container.container
                 self.report("{You} install the core.")
                 return 100

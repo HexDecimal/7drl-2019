@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import actions
+import actions.base
+import actions.common
 import component.actor
 import component.container
 import component.graphic
@@ -11,8 +12,8 @@ import obj.entity
 
 class Robot(obj.entity.Entity):
     class Actor(component.actor.Actor):
-        def act(self) -> actions.Action:
-            return actions.Standby(self.owner)
+        def act(self) -> actions.base.Action:
+            return actions.common.Standby(self.owner)
 
     class Physicality(component.physicality.Physicality):
         name = "robot"

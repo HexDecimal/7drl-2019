@@ -6,6 +6,7 @@ import g
 import obj.entity
 import component.graphic
 if TYPE_CHECKING:
+    import component.location
     import engine.zone
 
 

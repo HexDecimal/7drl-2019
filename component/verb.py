@@ -23,7 +23,7 @@ class TakeControlInteractable(Interactable):
         return actions.robot.RemoteControl(entity, self.owner).poll()
 
 
-class Interaction(component.base.OwnedComponent):
+class Interaction(Interactable):
     class Action(actions.base.EntityAction):
         pass
 

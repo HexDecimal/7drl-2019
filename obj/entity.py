@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Generic, Optional, TypeVar, TYPE_CHECKING
+import inspect
+from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
 
 import component.base
+from component.location import Location
+from component.actor import Actor
+from component.container import Container
+from component.graphic import Graphic
+from component.physicality import Physicality
+from component.item import Item
+import composite
 if TYPE_CHECKING:
     import component.actor
-    import component.base
     import component.container
     import component.graphic
     import component.item
@@ -19,22 +26,26 @@ T = TypeVar("T", bound="component.base.Component")
 class Ensure(Generic[T]):
     __slots__ = "attr",
 
-    attr: str
+    attr: Any
 
-    def __set_name__(self, owner: Any, name: str) -> None:
-        self.attr = name
+    def __init__(self, attr: Any) -> None:
+        self.attr = attr
 
     def __get__(self, obj: Entity, objtype: Any = None) -> T:
-        return obj._components[self.attr]  # type: ignore
+        assert len(obj[self.attr]) <= 1, obj[self.attr]
+        return obj[self.attr][0]  # type: ignore
 
-    def __set__(self, obj: Entity, value: T) -> None:
-        old: Optional[T] = obj._components.get(self.attr, None)  # type: ignore
-        if old is not None:
-            obj._components[self.attr] = value
-            value.on_replace(obj, old)
-        else:
-            obj._components[self.attr] = value
-            value.on_added(obj)
+    def __set__(self, obj: Entity, value: Optional[T]) -> None:
+        try:
+            old, = obj[self.attr]
+            assert len(obj[self.attr]) == 1, obj[self.attr]
+            obj.remove(old)
+            assert len(obj[self.attr]) == 0, obj[self.attr]
+        except ValueError:
+            pass
+        if value is not None:
+            obj.add(value)
+            assert len(obj[self.attr]) == 1, obj[self.attr]
 
 
 class Option(Ensure[T]):
@@ -45,41 +56,45 @@ class Option(Ensure[T]):
     ) -> Optional[T]:
         try:
             return super().__get__(obj, objtype)
-        except KeyError:
+        except IndexError:
             return None
 
-    def __set__(self, obj: Entity, value: Optional[T]) -> None:
-        if value is not None:
-            return super().__set__(obj, value)
 
-        old: Optional[T] = obj._components.get(self.attr, None)  # type: ignore
-        del obj._components[self.attr]
-        if old is not None:
-            old.on_remove(obj)
-
-
-class Entity:
-    __slots__ = "_components",
-    location: Ensure[component.location.Location] = Ensure()
-    actor: Option[component.actor.Actor] = Option()
-    container: Option[component.container.Container] = Option()
-    graphic: Option[component.graphic.Graphic] = Option()
-    physicality: Option[component.physicality.Physicality] = Option()
-    interactable: Option[component.verb.Interactable] = Option()
-    item: Option[component.item.Item] = Option()
+class Entity(composite.Composite):
+    __slots__ = ()
+    location: Ensure[Location] = Ensure(Location)
+    actor: Option[Actor] = Option(Actor)
+    container: Option[Container] = Option(Container)
+    graphic: Option[Graphic] = Option(Graphic)
+    physicality: Option[Physicality] = Option(Physicality)
+    item: Option[Item] = Option(Item)
 
     def __init__(self, location: component.location.Location) -> None:
-        self._components: Dict[str, component.base.Component] = {}
-        self.location = location
+        super().__init__()
+        self.add(location)
         for attr in dir(self):
-            if attr[0].isupper():
-                setattr(self, attr.lower(), getattr(self, attr)())
+            value = getattr(self, attr)
+            if not inspect.isclass(value):
+                continue
+            if not issubclass(value, component.base.Component):
+                continue
+            self.add(value())
 
     def destroy(self) -> None:
         """Unlink this entity from the world."""
-        for my_component in list(self._components.values()):
+        for my_component in self[component.base.Component]:
             my_component.on_destroy(self)
 
     def is_alive(self) -> bool:
         """Return True if this entity has not been destroyed."""
         return self in self.location.contents
+
+    def add(self, obj: Any) -> None:
+        """Add a component to this composite object."""
+        super().add(obj)
+        obj.on_added(self)
+
+    def remove(self, obj: Any) -> None:
+        """Remove a component from this composite object."""
+        obj.on_remove(self)
+        super().remove(obj)

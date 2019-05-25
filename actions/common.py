@@ -6,6 +6,7 @@ import actions.base
 import actions.combat
 import actions.movement
 import obj.entity
+from component.verb import Interactable
 
 
 class Wait(actions.base.Action):
@@ -15,15 +16,15 @@ class Wait(actions.base.Action):
 
 class Interact(actions.base.EntityAction):
     def poll(self) -> Optional[actions.base.Action]:
-        if not self.target.interactable:
-            return None
-        return self.target.interactable.interaction(self.entity)
+        for interactable in self.target[Interactable]:
+            return interactable.interaction(self.entity)
+        return None
 
 
 class BumpInteract(actions.base.BumpAction):
     def poll(self) -> Optional[actions.base.Action]:
         for target in self.destination.contents:
-            if target.interactable:
+            for interactable in target[Interactable]:
                 return Interact(self.entity, target).poll()
         return None
 

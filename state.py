@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import tcod.event
 
-import actions
+import actions.common
+import actions.inventory
+import actions.robot
 import g
 
 
@@ -129,13 +131,15 @@ class Game(State):
         assert g.model.controlled
         player = g.model.controlled
         if event.sym in self.DIR_KEYS:
-            actions.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
+            actions.common.Bump(
+                player, (*self.DIR_KEYS[event.sym], 0)
+            ).invoke()
         elif event.sym in self.WAIT_KEYS:
-            actions.Wait(player).invoke()
+            actions.common.Wait(player).invoke()
         elif event.sym in self.CANCEL_KEYS:
-            actions.ReturnControlToPlayer(player).invoke()
+            actions.robot.ReturnControlToPlayer(player).invoke()
         elif event.sym in self.PICKUP_KEYS:
-            actions.PickupGeneral(player).invoke()
+            actions.inventory.PickupGeneral(player).invoke()
         else:
             print(event)
         g.model.zone.simulate()

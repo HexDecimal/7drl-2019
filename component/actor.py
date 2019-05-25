@@ -4,7 +4,8 @@ from typing import Optional, TYPE_CHECKING
 
 import tqueue
 
-import actions
+import actions.base
+import actions.common
 import component.base
 if TYPE_CHECKING:
     import obj.entity
@@ -16,7 +17,7 @@ class Actor(component.base.OwnedComponent):
     def __init__(self) -> None:
         super().__init__()
         self.ticket: Optional[tqueue.Ticket] = None
-        self.action: Optional[actions.Action] = None
+        self.action: Optional[actions.base.Action] = None
 
     def on_added(self, entity: obj.entity.Entity) -> None:
         super().on_added(entity)
@@ -36,8 +37,8 @@ class Actor(component.base.OwnedComponent):
         if self.zone.player is self.owner:
             self.zone.player = None
 
-    def act(self) -> actions.Action:
-        return actions.Wait(self.owner)
+    def act(self) -> actions.base.Action:
+        return actions.common.Wait(self.owner)
 
     def __call__(self, ticket: tqueue.Ticket) -> None:
         if self.ticket is ticket:
@@ -48,14 +49,14 @@ class Actor(component.base.OwnedComponent):
                 if not self.action.invoke():
                     self.schedule(100)
             else:
-                actions.PlayerControl(self.owner).invoke()
+                actions.common.PlayerControl(self.owner).invoke()
 
     def is_controlled(self) -> bool:
         return self.controlled
 
     def take_control(self) -> None:
         self.interrupt(True)
-        actions.PlayerControl(self.owner).invoke()
+        actions.common.PlayerControl(self.owner).invoke()
 
     def interrupt(self, force: bool = False) -> None:
         self.ticket = None
