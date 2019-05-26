@@ -117,3 +117,4 @@ dmypy.json
 
 # Custom
 Thumbs.db
+.idea/workspace.xml

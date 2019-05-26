@@ -21,12 +21,6 @@ class Component:
     def on_remove(self, entity: obj.entity.Entity) -> None:
         pass
 
-    def on_replace(self, entity: obj.entity.Entity, old: Any) -> None:
-        """Called instead of added/remove when an existing component is
-        replaced."""
-        old.on_remove(entity)
-        self.on_added(entity)
-
     def on_destroy(self, entity: obj.entity.Entity) -> None:
         """Owner entity is being destructed."""
 

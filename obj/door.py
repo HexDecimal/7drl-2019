@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Optional
 
 import actions.base
-import component.container
 import component.graphic
 import component.physicality
 import component.verb
