@@ -1,3 +1,5 @@
+import pytest  # type: ignore
+
 from . import Composite
 
 
@@ -9,6 +11,8 @@ def test_composite() -> None:
     assert comp[int][0] == 1
     assert comp[object][0] == 1
     comp.add(2)
-    comp.remove(2)
-    comp.remove(1)
-    assert int not in comp
+    comp[int] = 0
+    assert list(comp[int]) == [0]
+    assert list(comp[tuple]) == []
+    with pytest.raises(TypeError):
+        comp[tuple] = 10

@@ -13,7 +13,18 @@ class Composite:
 
     def __getitem__(self, key: Type[T]) -> Sequence[T]:
         """Return all components derived from the `key` class."""
-        return self._components.get(key, ())
+        try:
+            return self._components[key]
+        except KeyError:
+            return ()
+
+    def __setitem__(self, key: Type[T], value: T) -> None:
+        """Replace all components of type `key` with just `value`."""
+        if key not in value.__class__.__mro__:
+            raise TypeError(f"{value} isn't an instance of {key}.")
+        for component in list(self[key]):
+            self.remove(component)
+        self.add(value)
 
     def __contains__(self, item: Any) -> bool:
         """Return True if `item` is in or is a class handled by self."""
@@ -31,8 +42,6 @@ class Composite:
         """Remove a component from this composite object."""
         for cls in obj.__class__.__mro__:
             self._components[cls].remove(obj)
-            if not self._components[cls]:
-                del self._components[cls]
 
 
 __all__ = ("Composite",)
