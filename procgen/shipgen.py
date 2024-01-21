@@ -141,7 +141,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
         if not neighbors:
             self.stem = []
             return
-        nodes, weights = zip(*neighbors)
+        nodes, weights = zip(*neighbors, strict=True)
         neighbor, stem = self.ship.rng.choices(list(nodes), weights)[0]
         self.visit(neighbor, stem)
         if not list(self.get_neighbors(stem)):
@@ -168,7 +168,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
         neighbors = list(self.get_neighbors(node))
         if not neighbors:
             return None
-        nodes, weights = zip(*self.get_neighbors(node))
+        nodes, weights = zip(*self.get_neighbors(node), strict=True)
         return self.ship.rng.choices(list(nodes), weights)[0]  # type: ignore
 
     def get_connection(
@@ -283,7 +283,7 @@ class Ship:
     def np_sample(self, array: NDArray[Any], k: int) -> list[tuple[Any, ...]]:
         if not np.any(array):
             return []
-        return self.rng.sample(list(zip(*array.nonzero())), k)
+        return self.rng.sample(list(zip(*array.nonzero(), strict=False)), k)
 
     def generate(self) -> None:
         self.length = 64
