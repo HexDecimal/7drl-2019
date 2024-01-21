@@ -30,6 +30,7 @@ class AutoDoor(obj.entity.Entity):
                 return 100
 
         def interaction(
-            self, entity: obj.entity.Entity,
+            self,
+            entity: obj.entity.Entity,
         ) -> Optional[actions.base.Action]:
             return self.OpenDoor(entity, self.owner)

@@ -19,11 +19,7 @@ class Location(component.base.Component):
         assert entity not in self.contents
         self.contents.append(entity)
 
-    def on_replace(
-        self,
-        entity: obj.entity.Entity,
-        old: Location
-    ) -> None:
+    def on_replace(self, entity: obj.entity.Entity, old: Location) -> None:
         assert self.zone is old.zone
         old.contents.remove(entity)
         self.contents.append(entity)
@@ -40,8 +36,7 @@ class Location(component.base.Component):
         return self.zone[self.xyz[0] + x, self.xyz[1] + y, self.xyz[2] + z]
 
     def is_adjacent(self, other: Location) -> bool:
-        """Return True if this location is at most one tile away from `other`.
-        """
+        """Return True if this location is at most one tile away from `other`."""
         if self.xyz[2] != other.xyz[2]:
             return False
         if abs(self.xyz[0] - other.xyz[0]) > 1:

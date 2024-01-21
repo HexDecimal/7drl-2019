@@ -25,7 +25,7 @@ T = TypeVar("T", bound="component.base.Component")
 
 
 class Ensure(Generic[T]):
-    __slots__ = "attr",
+    __slots__ = ("attr",)
 
     attr: Any
 
@@ -38,7 +38,7 @@ class Ensure(Generic[T]):
 
     def __set__(self, obj: Entity, value: Optional[T]) -> None:
         try:
-            old, = obj[self.attr]
+            (old,) = obj[self.attr]
             assert len(obj[self.attr]) == 1, obj[self.attr]
             obj.remove(old)
             assert len(obj[self.attr]) == 0, obj[self.attr]
@@ -53,7 +53,9 @@ class Option(Ensure[T]):
     __slots__ = ()
 
     def __get__(  # type: ignore
-        self, obj: Entity, objtype: Any = None,
+        self,
+        obj: Entity,
+        objtype: Any = None,
     ) -> Optional[T]:
         try:
             return super().__get__(obj, objtype)

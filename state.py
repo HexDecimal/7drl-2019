@@ -14,7 +14,6 @@ class StateExit(Exception):
 
 
 class State(tcod.event.EventDispatch):
-
     def activate(self) -> None:
         self.on_enter()
         try:
@@ -41,7 +40,6 @@ class State(tcod.event.EventDispatch):
 
 
 class MainMenu(State):
-
     def on_enter(self) -> None:
         g.console.print(0, 0, "Hello zone!")
 
@@ -61,7 +59,6 @@ class Game(State):
         tcod.event.KeySym.END: (-1, 1),
         tcod.event.KeySym.PAGEUP: (1, -1),
         tcod.event.KeySym.PAGEDOWN: (1, 1),
-
         tcod.event.KeySym.KP_4: (-1, 0),
         tcod.event.KeySym.KP_6: (1, 0),
         tcod.event.KeySym.KP_8: (0, -1),
@@ -70,7 +67,6 @@ class Game(State):
         tcod.event.KeySym.KP_1: (-1, 1),
         tcod.event.KeySym.KP_9: (1, -1),
         tcod.event.KeySym.KP_3: (1, 1),
-
         tcod.event.KeySym.h: (-1, 0),
         tcod.event.KeySym.l: (1, 0),
         tcod.event.KeySym.k: (0, -1),
@@ -100,23 +96,18 @@ class Game(State):
     def draw_ui(self) -> None:
         ui_console = tcod.console.Console(20, 20, order="F")
         ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
-        ui_console.draw_rect(1, ui_console.height - 1,
-                             ui_console.width, 1, ord("─"))
+        ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ord("─"))
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ord("└"))
         ui_console.print(1, 0, f"Time: {g.model.zone.tqueue.time}")
         ui_console.print(1, 1, f"Pos: {g.model.player.location.xyz}")
-        room_name = g.model.zone.room_types[
-            g.model.zone.data["room_id"][g.model.player.location.xyz]
-        ]
+        room_name = g.model.zone.room_types[g.model.zone.data["room_id"][g.model.player.location.xyz]]
         ui_console.print(1, 2, f"{room_name}")
 
-        ui_console.blit(g.console, g.console.width - ui_console.width, 0,
-                        bg_alpha=0.9)
+        ui_console.blit(g.console, g.console.width - ui_console.width, 0, bg_alpha=0.9)
 
         log_console = tcod.console.Console(80, 10, order="F")
         log_console.draw_rect(0, 0, log_console.width, 1, ord("─"))
-        log_console.draw_rect(log_console.width - 1, 1,
-                              1, log_console.height, ord("│"))
+        log_console.draw_rect(log_console.width - 1, 1, 1, log_console.height, ord("│"))
         log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
         y = log_console.height
         for log in reversed(g.model.log):
@@ -125,16 +116,13 @@ class Game(State):
                 break
             log_console.print_box(0, y, 0, 0, log)
 
-        log_console.blit(g.console, 0, g.console.height - log_console.height,
-                         bg_alpha=0.9)
+        log_console.blit(g.console, 0, g.console.height - log_console.height, bg_alpha=0.9)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         assert g.model.controlled
         player = g.model.controlled
         if event.sym in self.DIR_KEYS:
-            actions.common.Bump(
-                player, (*self.DIR_KEYS[event.sym], 0)
-            ).invoke()
+            actions.common.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
         elif event.sym in self.WAIT_KEYS:
             actions.common.Wait(player).invoke()
         elif event.sym in self.CANCEL_KEYS:

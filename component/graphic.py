@@ -6,7 +6,7 @@ import component.base
 
 
 class Graphic(component.base.Component):
-    CH = ord('!')
+    CH = ord("!")
     FG = (255, 255, 255)
     PRIORITY = 0
 

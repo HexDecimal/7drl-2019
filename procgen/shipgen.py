@@ -148,8 +148,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
 
     def get_all_neighbors(
         self,
-    ) -> Iterator[tuple[tuple[tuple[int, int, int],
-                              tuple[int, int, int]], int]]:
+    ) -> Iterator[tuple[tuple[tuple[int, int, int], tuple[int, int, int]], int]]:
         for node in self.stem:
             for neighbor, weight in self.get_neighbors(node):
                 yield (neighbor, node), weight
@@ -158,7 +157,8 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
         return self.ship.rng.randint(0, len(self.stem) - 1)
 
     def select_neighbor(
-        self, node: tuple[int, int, int],
+        self,
+        node: tuple[int, int, int],
     ) -> Optional[tuple[int, int, int]]:
         """Return an unvisited neighbor to `node` if one exists.
 
@@ -185,17 +185,16 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
             assert node1[0] == node2[0]
             assert node1[1] != node2[1]
             axis = 1
-        return (axis, node1[axis],
-                self.ship.rooms[node1], self.ship.rooms[node2])
+        return (axis, node1[axis], self.ship.rooms[node1], self.ship.rooms[node2])
 
     def get_neighbors(
-        self, node: tuple[int, int, int],
+        self,
+        node: tuple[int, int, int],
     ) -> Iterator[tuple[tuple[int, int, int], int]]:
         """Generate an iterator of (neighbor, weight) tuples."""
         for x, y in self.CARDINALS:
             neighbor = node[0] + x, node[1] + y, node[2]
-            if not(0 <= neighbor[0] < self.visited.shape[0]
-                   and 0 <= neighbor[1] < self.visited.shape[1]):
+            if not (0 <= neighbor[0] < self.visited.shape[0] and 0 <= neighbor[1] < self.visited.shape[1]):
                 continue
             if self.visited[neighbor]:
                 continue
@@ -234,7 +233,9 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
             self.connect_rooms(prev, node)
 
     def connect_rooms(
-        self, room_a: tuple[int, int, int], room_b: tuple[int, int, int],
+        self,
+        room_a: tuple[int, int, int],
+        room_b: tuple[int, int, int],
     ) -> None:
         door_x = room_b[0] * self.ship.room_width
         door_y = room_b[1] * self.ship.room_height
@@ -253,7 +254,9 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
         obj.door.AutoDoor(self.ship.zone[door])
 
     def connect_rooms_debug(
-        self, room_a: tuple[int, int, int], room_b: tuple[int, int, int],
+        self,
+        room_a: tuple[int, int, int],
+        room_b: tuple[int, int, int],
     ) -> None:
         line = tcod.libtcodpy.line_where(
             room_a[0] * self.ship.room_width + 2,
@@ -261,8 +264,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
             room_b[0] * self.ship.room_width + 2,
             room_b[1] * self.ship.room_height + 2,
         )
-        self.ship.zone.data["tile"][line] = \
-            tiles.metal_floor._replace(bg=(0, 255, 0))
+        self.ship.zone.data["tile"][line] = tiles.metal_floor._replace(bg=(0, 255, 0))
 
 
 class Ship:
@@ -287,13 +289,10 @@ class Ship:
         self.half_width = 8
         self.depth = 1
         self.width = self.half_width * 2 + self.rng.randint(0, 1)
-        self.zone = engine.zone.Zone((self.length * self.room_width + 1,
-                                      self.width * self.room_height + 1,
-                                      self.depth))
+        self.zone = engine.zone.Zone((self.length * self.room_width + 1, self.width * self.room_height + 1, self.depth))
 
         self.form = np.zeros((self.depth, self.length), dtype=int)
-        self.rooms = np.zeros((self.length, self.width, self.depth),
-                              dtype=int, order="F")
+        self.rooms = np.zeros((self.length, self.width, self.depth), dtype=int, order="F")
         self.room_types = {
             -1: Space(),
             0: RoomType(),
@@ -324,23 +323,21 @@ class Ship:
         x = 0
         while x < self.length:
             xx = x + self.rng.randint(1, self.width)
-            self.form[:, x:xx] = \
-                self.rng.randint(0, int(self.half_width // 1.5))
+            self.form[:, x:xx] = self.rng.randint(0, int(self.half_width // 1.5))
             x = xx
 
         for x in range(self.length):
             if self.form[0, x] == 0:
                 continue
-            self.rooms[x, :self.form[0, x], 0] = -1
-            self.rooms[x, -self.form[0, x]:, 0] = -1
+            self.rooms[x, : self.form[0, x], 0] = -1
+            self.rooms[x, -self.form[0, x] :, 0] = -1
 
     def gen_halls(self) -> None:
         start_x = self.rng.randint(0, self.length // 4)
         end_x = self.rooms.shape[0] - self.rng.randint(0, self.length // 4)
         self.rooms[start_x:end_x, self.half_width, 0] = 1
         self.root_node = start_x, self.half_width, 0
-        self.start_position = (start_x * self.room_width + 1,
-                               self.half_width * self.room_height + 1, 0)
+        self.start_position = (start_x * self.room_width + 1, self.half_width * self.room_height + 1, 0)
 
     def add_new_room(self, room: RoomType, floor: int = 0) -> None:
         sizes = list(
@@ -361,8 +358,7 @@ class Ship:
         self.room_types[self.next_room_id] = room
         self.next_room_id += 1
 
-    def get_free_space(self, size: tuple[int, int],
-                       floor: int) -> tuple[slice, slice]:
+    def get_free_space(self, size: tuple[int, int], floor: int) -> tuple[slice, slice]:
         """Return the slice indexes of a an unclaimed area."""
         width, height = size
         room_area = np.ones((width, height), dtype=bool)
@@ -372,12 +368,12 @@ class Ship:
             (self.rooms[..., floor] != 0).astype(int),
             room_area,
             "full",
-        )[width-1:-width+1, height-1:-height+1]
+        )[width - 1 : -width + 1, height - 1 : -height + 1]
         valid = np.transpose((valid == 0).nonzero())
         if not valid.size:
             raise NoRoom("No space left for room.")
         x, y = self.rng.choice(valid)
-        assert (self.rooms[x:x+width, y:y+height, floor] == 0).all()
+        assert (self.rooms[x : x + width, y : y + height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
 
     def get_unclaimed_cell(self) -> tuple[int, int]:
@@ -432,19 +428,15 @@ class Ship:
 
             left_tile = get_merge_tile(room_type, left_type)
             top_tile = get_merge_tile(room_type, top_type)
-            topleft_tile = get_merge_tile(room_type, left_type,
-                                          top_type, topleft_type)
+            topleft_tile = get_merge_tile(room_type, left_type, top_type, topleft_type)
 
             self.zone.data["tile"][left, top, cz] = topleft_tile
-            self.zone.data["tile"][left+1:right, top, cz] = top_tile
-            self.zone.data["tile"][left, top+1:bottom, cz] = left_tile
-            self.zone.data["tile"][left+1:right, top+1:bottom, cz] = \
-                room_type.floor
+            self.zone.data["tile"][left + 1 : right, top, cz] = top_tile
+            self.zone.data["tile"][left, top + 1 : bottom, cz] = left_tile
+            self.zone.data["tile"][left + 1 : right, top + 1 : bottom, cz] = room_type.floor
 
         self.zone.data["room_id"] = -1
-        self.zone.data["room_id"][:-1, :-1, :] = np.kron(
-            self.rooms, np.ones((self.room_width, self.room_height, 1))
-        )
+        self.zone.data["room_id"][:-1, :-1, :] = np.kron(self.rooms, np.ones((self.room_width, self.room_height, 1)))
         self.zone.room_types = self.room_types
 
         ShipRoomConntector(self).generate()
@@ -459,5 +451,4 @@ class Ship:
             else:
                 return "%i" % (self.rooms[x, y, 0] % 10)
 
-        return "\n".join("".join(icon(x, y) for x in range(self.length))
-                         for y in range(self.width))
+        return "\n".join("".join(icon(x, y) for x in range(self.length)) for y in range(self.width))

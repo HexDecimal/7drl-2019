@@ -11,6 +11,7 @@ class AbstractGrowingTree(Generic[T]):
 
     A sub-class needs to keep track of node neighbors and visited nodes.
     """
+
     def __init__(self, stem: Optional[Iterable[T]] = None) -> None:
         """Initialize the stem."""
         self.stem: list[T] = list(stem) if stem is not None else []

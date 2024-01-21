@@ -21,6 +21,7 @@ CONFIG: dict[str, Any] = {
 
 g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, order="F")
 
+
 def main() -> None:
     with tcod.context.new(**CONFIG) as g.context:
         g.context

@@ -21,7 +21,7 @@ class Attack(actions.base.EntityAction):
         assert self.entity.physicality
         assert self.target.physicality
         self.target.actor = None
-        self.target.graphic = component.graphic.Graphic(ord('%'), (63, 63, 63))
+        self.target.graphic = component.graphic.Graphic(ord("%"), (63, 63, 63))
         return self.entity.physicality.attack_speed
 
 

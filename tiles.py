@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import NamedTuple
 
 DTYPE = [
-    ('ch', int),
-    ('fg', '(3,)u1'),
-    ('bg', '(3,)u1'),
+    ("ch", int),
+    ("fg", "(3,)u1"),
+    ("bg", "(3,)u1"),
     ("walkable", int),
     ("transparent", bool),
 ]

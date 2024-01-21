@@ -19,8 +19,7 @@ class Action:
         """Attempt the action and return True if the action was performed."""
         assert self.entity.actor, "Action invoked on a non-actor entity."
         # Ensure this actor was not already scheduled.
-        assert self.entity.actor.ticket is None, \
-            "Actor is already waiting after an action."
+        assert self.entity.actor.ticket is None, "Actor is already waiting after an action."
         ready_action = self.poll()
         if ready_action is None:
             return False
@@ -68,6 +67,7 @@ class LocationAction(Action):
 
 class EntityAction(Action):
     """Action with an entity target."""
+
     def __init__(
         self,
         entity: obj.entity.Entity,
@@ -84,6 +84,7 @@ class EntityAction(Action):
 
 class BumpAction(Action):
     """An action with a direction."""
+
     def __init__(
         self,
         entity: obj.entity.Entity,

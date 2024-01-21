@@ -54,8 +54,7 @@ class Zone:
         cam_right = min(cam_x + console.width, self.width)
         cam_bottom = min(cam_y + console.height, self.height)
 
-        con_view = (slice(cam_left - cam_x, cam_right - cam_x),
-                    slice(cam_top - cam_y, cam_bottom - cam_y))
+        con_view = (slice(cam_left - cam_x, cam_right - cam_x), slice(cam_top - cam_y, cam_bottom - cam_y))
 
         tile = self.data["tile"][cam_left:cam_right, cam_top:cam_bottom, cam_z]
 

@@ -54,6 +54,7 @@ class Bump(actions.base.Action):
 
 class PlayerControl(actions.base.Action):
     """Give immediate user control to this entity."""
+
     def action(self) -> Optional[int]:
         assert self.entity
         assert self.entity.actor
