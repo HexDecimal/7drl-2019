@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import component.container
 import component.graphic
 import component.physicality
 import component.verb
 import obj.entity
+
 if TYPE_CHECKING:
     import actions.base
 

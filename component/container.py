@@ -1,25 +1,26 @@
 from __future__ import annotations
 
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from component.base import OwnedComponent
-from component.location import List, Location
+from component.location import Location
+
 if TYPE_CHECKING:
-    from obj.entity import Entity
     import engine.zone
+    from obj.entity import Entity
 
 
 class ContainerLocation(Location):
     def __init__(self, master: Container) -> None:
         self.master = master
-        self.contents: List[Entity] = []
+        self.contents: list[Entity] = []
 
     @property
     def zone(self) -> engine.zone.Zone:
         return self.master.owner.location.zone
 
     @property
-    def xyz(self) -> Tuple[int, int, int]:
+    def xyz(self) -> tuple[int, int, int]:
         return self.master.owner.location.xyz
 
 
@@ -30,5 +31,5 @@ class Container(OwnedComponent):
         self.container = ContainerLocation(self)
 
     @property
-    def contents(self) -> List[Entity]:
+    def contents(self) -> list[Entity]:
         return self.container.contents

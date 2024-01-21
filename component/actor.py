@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
-
-import tqueue
+from typing import TYPE_CHECKING, Optional
 
 import actions.base
 import actions.common
 import component.base
+import tqueue
+
 if TYPE_CHECKING:
     import obj.entity
 

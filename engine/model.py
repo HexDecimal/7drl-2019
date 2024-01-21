@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
-import procgen.shipgen
-import obj.living
-import obj.robot
-import obj.monster
 import obj.item
+import obj.living
+import obj.monster
+import obj.robot
+import procgen.shipgen
+
 if TYPE_CHECKING:
     import engine.zone
     import obj.entity
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class Model:
     zone: engine.zone.Zone  # The active zone.
     player: obj.entity.Entity  # The primary player entity.
-    log: List[str]
+    log: list[str]
 
     def __init__(self) -> None:
         ship = procgen.shipgen.Ship(1)

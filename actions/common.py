@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional
+from typing import Optional
 
 import actions.base
 import actions.combat
@@ -33,7 +33,7 @@ class Bump(actions.base.Action):
     def __init__(
         self,
         entity: obj.entity.Entity,
-        direction: Tuple[int, int, int],
+        direction: tuple[int, int, int],
     ) -> None:
         super().__init__(entity)
         self.direction = direction

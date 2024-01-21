@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import obj.entity
 import component.graphic
 import component.item
+import obj.entity
 
 
 class BaseItem(obj.entity.Entity):

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-import tcod.tileset
 import tcod.console
 import tcod.context
+import tcod.tileset
 
+import engine.model
 import g
 import state
-import engine.model
 
-CONFIG: Dict[str, Any] = {
+CONFIG: dict[str, Any] = {
     "width": 800,
     "height": 500,
     "title": None,

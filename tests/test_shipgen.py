@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append(".")
 
 import procgen.shipgen  # noqa: E402

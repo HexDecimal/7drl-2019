@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import tcod.path
 
 import actions.base
 import actions.common
+
 if TYPE_CHECKING:
     import obj.entity
 

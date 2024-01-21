@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
+import component.graphic
 import g
 import obj.entity
-import component.graphic
+
 if TYPE_CHECKING:
     import component.location
     import engine.zone
@@ -86,7 +87,7 @@ class BumpAction(Action):
     def __init__(
         self,
         entity: obj.entity.Entity,
-        direction: Tuple[int, int, int],
+        direction: tuple[int, int, int],
     ):
         super().__init__(entity)
         self.direction = direction

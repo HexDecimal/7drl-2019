@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Optional, Generic, TypeVar
+from collections.abc import Iterable
+from typing import Generic, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -12,7 +13,7 @@ class AbstractGrowingTree(Generic[T]):
     """
     def __init__(self, stem: Optional[Iterable[T]] = None) -> None:
         """Initialize the stem."""
-        self.stem: List[T] = list(stem) if stem is not None else []
+        self.stem: list[T] = list(stem) if stem is not None else []
 
     def generate(self) -> None:
         """Run the growing tree algorithm until the stem is exhausted."""

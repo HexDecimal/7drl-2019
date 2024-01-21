@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import g
+
 if TYPE_CHECKING:
-    import obj.entity
-    import engine.zone
     import engine.model
+    import engine.zone
+    import obj.entity
 
 
 class Null:

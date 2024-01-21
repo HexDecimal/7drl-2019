@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import NamedTuple, Tuple
+from typing import NamedTuple
 
 DTYPE = [
     ('ch', int),
@@ -13,8 +13,8 @@ DTYPE = [
 
 class Tile(NamedTuple):
     ch: int = ord("?")
-    fg: Tuple[int, int, int] = (255, 255, 255)
-    bg: Tuple[int, int, int] = (0, 0, 0)
+    fg: tuple[int, int, int] = (255, 255, 255)
+    bg: tuple[int, int, int] = (0, 0, 0)
     walkable: int = 0
     transparent: bool = False
 

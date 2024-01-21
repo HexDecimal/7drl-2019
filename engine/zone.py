@@ -1,25 +1,26 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np  # type: ignore
 import tcod.console
-import tqueue
 
+import component.location
 import g
 import obj.entity
-import component.location
 import tiles
+import tqueue
+
 if TYPE_CHECKING:
     import procgen.shipgen
 
 
 class Zone:
     DTYPE: Any = [("tile", tiles.DTYPE), ("room_id", np.int16)]
-    locations: Dict[Tuple[int, int, int], component.location.Location]
-    room_types: Dict[int, procgen.shipgen.RoomType]
+    locations: dict[tuple[int, int, int], component.location.Location]
+    room_types: dict[int, procgen.shipgen.RoomType]
 
-    def __init__(self, shape: Tuple[int, int, int]) -> None:
+    def __init__(self, shape: tuple[int, int, int]) -> None:
         self.shape = shape
 
         self.camera = (0, 0, 0)
@@ -71,7 +72,7 @@ class Zone:
 
     def __getitem__(
         self,
-        xyz: Tuple[int, int, int],
+        xyz: tuple[int, int, int],
     ) -> component.location.Location:
         """Return a location, creating a new one if it doesn't exist."""
         if xyz not in self.locations:

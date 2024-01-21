@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 
 import component.base
-from component.location import Location
+import composite
 from component.actor import Actor
 from component.container import Container
 from component.graphic import Graphic
-from component.physicality import Physicality
 from component.item import Item
-import composite
+from component.location import Location
+from component.physicality import Physicality
+
 if TYPE_CHECKING:
     import component.actor
     import component.container

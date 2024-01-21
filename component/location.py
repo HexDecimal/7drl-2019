@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from typing import Any, List, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import component.base
 
 if TYPE_CHECKING:
-    import obj.entity
     import engine.zone
+    import obj.entity
 
 
 class Location(component.base.Component):
-    def __init__(self, zone: engine.zone.Zone, xyz: Tuple[int, int, int]):
+    def __init__(self, zone: engine.zone.Zone, xyz: tuple[int, int, int]):
         self._zone = zone
         self._xyz = xyz
-        self.contents: List[obj.entity.Entity] = []
+        self.contents: list[obj.entity.Entity] = []
 
     def on_added(self, entity: obj.entity.Entity) -> None:
         assert entity not in self.contents
@@ -55,7 +55,7 @@ class Location(component.base.Component):
         return self.zone.data[self.xyz]
 
     @property
-    def xyz(self) -> Tuple[int, int, int]:
+    def xyz(self) -> tuple[int, int, int]:
         return self._xyz
 
     @property
