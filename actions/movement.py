@@ -49,7 +49,7 @@ class Follow(actions.base.EntityAction):
         self,
         entity: obj.entity.Entity,
         target: obj.entity.Entity,
-    ):
+    ) -> None:
         super().__init__(entity, target)
         z = entity.location.xyz[2]
         self.pathfinder = tcod.path.AStar(

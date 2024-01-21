@@ -27,7 +27,7 @@ strict_equality = true
 
 [tool.ruff]
 # https://docs.astral.sh/ruff/rules/
-exclude  = ["./tqueue"]
+exclude = ["./tqueue"]
 select = [
     "C90", # mccabe
     "E",   # pycodestyle

@@ -22,7 +22,8 @@ class Composite:
     def __setitem__(self, key: type[T], value: T) -> None:
         """Replace all components of type `key` with just `value`."""
         if key not in value.__class__.__mro__:
-            raise TypeError(f"{value} isn't an instance of {key}.")
+            msg = f"{value} isn't an instance of {key}."
+            raise TypeError(msg)
         for component in list(self[key]):
             self.remove(component)
         self.add(value)

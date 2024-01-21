@@ -22,7 +22,7 @@ class Interact(actions.base.EntityAction):
 class BumpInteract(actions.base.BumpAction):
     def poll(self) -> actions.base.Action | None:
         for target in self.destination.contents:
-            for interactable in target[Interactable]:
+            for _interactable in target[Interactable]:
                 return Interact(self.entity, target).poll()
         return None
 

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class Location(component.base.Component):
-    def __init__(self, zone: engine.zone.Zone, xyz: tuple[int, int, int]):
+    def __init__(self, zone: engine.zone.Zone, xyz: tuple[int, int, int]) -> None:
         self._zone = zone
         self._xyz = xyz
         self.contents: list[obj.entity.Entity] = []

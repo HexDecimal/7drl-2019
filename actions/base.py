@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Action:
-    def __init__(self, entity: obj.entity.Entity):
+    def __init__(self, entity: obj.entity.Entity) -> None:
         self.entity = entity
 
     def invoke(self) -> bool:
@@ -60,7 +60,7 @@ class LocationAction(Action):
         self,
         entity: obj.entity.Entity,
         location: component.location.Location,
-    ):
+    ) -> None:
         super().__init__(entity)
         self.location = location
 
@@ -72,7 +72,7 @@ class EntityAction(Action):
         self,
         entity: obj.entity.Entity,
         target: obj.entity.Entity,
-    ):
+    ) -> None:
         super().__init__(entity)
         self.target = target
 
@@ -89,7 +89,7 @@ class BumpAction(Action):
         self,
         entity: obj.entity.Entity,
         direction: tuple[int, int, int],
-    ):
+    ) -> None:
         super().__init__(entity)
         self.direction = direction
 

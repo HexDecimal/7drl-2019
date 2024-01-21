@@ -39,7 +39,8 @@ class Zone:
             ticket = self.tqueue.next()
             ticket.value(ticket)
             if not g.model.player.actor:
-                raise SystemExit("Player has died.")
+                msg = "Player has died."
+                raise SystemExit(msg)
         assert self.player.actor
         self.player.actor.action = None  # Clear PlayerControl action.
 

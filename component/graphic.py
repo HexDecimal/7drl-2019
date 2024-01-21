@@ -13,7 +13,7 @@ class Graphic(component.base.Component):
         ch: int | None = None,
         fg: tuple[int, int, int] | None = None,
         priority: int | None = None,
-    ):
+    ) -> None:
         self.ch = ch if ch is not None else self.CH
         self.fg = fg if fg is not None else self.FG
         self.priority = priority if priority is not None else self.PRIORITY

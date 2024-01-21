@@ -124,7 +124,7 @@ class Bridge(RoomType):
 class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
     CARDINALS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
-    def __init__(self, ship: Ship):
+    def __init__(self, ship: Ship) -> None:
         self.ship = ship
         self.visited = ship.rooms == -1
         self.visited[self.ship.root_node] = True
@@ -273,7 +273,7 @@ class Ship:
     room_width = 4
     room_height = 4
 
-    def __init__(self, seed: int | None = None):
+    def __init__(self, seed: int | None = None) -> None:
         if seed is None:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)
@@ -354,7 +354,8 @@ class Ship:
             except NoRoom:
                 pass
         else:
-            raise NoRoom(f"Could not fit {room}.")
+            msg = f"Could not fit {room}."
+            raise NoRoom(msg)
         self.room_types[self.next_room_id] = room
         self.next_room_id += 1
 
@@ -371,7 +372,8 @@ class Ship:
         )[width - 1 : -width + 1, height - 1 : -height + 1]
         valid = np.transpose((valid == 0).nonzero())
         if not valid.size:
-            raise NoRoom("No space left for room.")
+            msg = "No space left for room."
+            raise NoRoom(msg)
         x, y = self.rng.choice(valid)
         assert (self.rooms[x : x + width, y : y + height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
