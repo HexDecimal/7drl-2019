@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import component.base
 
 
@@ -12,9 +10,9 @@ class Graphic(component.base.Component):
 
     def __init__(
         self,
-        ch: Optional[int] = None,
-        fg: Optional[tuple[int, int, int]] = None,
-        priority: Optional[int] = None,
+        ch: int | None = None,
+        fg: tuple[int, int, int] | None = None,
+        priority: int | None = None,
     ):
         self.ch = ch if ch is not None else self.CH
         self.fg = fg if fg is not None else self.FG

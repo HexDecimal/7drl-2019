@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import numpy as np  # type: ignore
 import tcod.console
@@ -32,7 +32,7 @@ class Zone:
         self.locations = {}
         self.tqueue = tqueue.TurnQueue()
 
-        self.player: Optional[obj.entity.Entity] = None
+        self.player: obj.entity.Entity | None = None
 
     def simulate(self) -> None:
         while not self.player:

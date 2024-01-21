@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import tcod.path
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class MoveTo(actions.base.LocationAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         if not self.location.data["tile"]["walkable"]:
             return None
         for entity in self.location.contents:
@@ -31,12 +31,12 @@ class MoveTo(actions.base.LocationAction):
 
 
 class MoveBy(actions.base.BumpAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         return MoveTo(self.entity, self.destination).poll()
 
 
 class MoveTowards(actions.base.LocationAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         x = self.location.xyz[0] - self.entity.location.xyz[0]
         y = self.location.xyz[1] - self.entity.location.xyz[1]
         x //= abs(x)
@@ -56,7 +56,7 @@ class Follow(actions.base.EntityAction):
             entity.location.zone.data["tile"]["walkable"][:, :, z],
         )
 
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         my_coord = self.entity.location.xyz[:2]
         target_coord = self.target.location.xyz[:2]
         path = self.pathfinder.get_path(*my_coord, *target_coord)

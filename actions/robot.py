@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import actions.base
 
 
 class ReturnControlToPlayer(actions.base.Action):
-    def poll(self) -> Optional[ReturnControlToPlayer]:
+    def poll(self) -> ReturnControlToPlayer | None:
         if self.entity is self.model.player:
             return None
         return self
@@ -21,7 +19,7 @@ class ReturnControlToPlayer(actions.base.Action):
 
 
 class RemoteControl(actions.base.EntityAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         if self.target is self.model.player:
             return ReturnControlToPlayer(self.entity)
         return self

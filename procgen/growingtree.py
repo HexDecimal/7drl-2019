@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -12,7 +12,7 @@ class AbstractGrowingTree(Generic[T]):
     A sub-class needs to keep track of node neighbors and visited nodes.
     """
 
-    def __init__(self, stem: Optional[Iterable[T]] = None) -> None:
+    def __init__(self, stem: Iterable[T] | None = None) -> None:
         """Initialize the stem."""
         self.stem: list[T] = list(stem) if stem is not None else []
 
@@ -36,7 +36,7 @@ class AbstractGrowingTree(Generic[T]):
     def visit(
         self,
         node: T,
-        prev: Optional[T],
+        prev: T | None,
     ) -> None:
         """Mark a node as visited and extend the stem.
 
@@ -60,7 +60,7 @@ class AbstractGrowingTree(Generic[T]):
     def select_neighbor(
         self,
         node: T,
-    ) -> Optional[T]:
+    ) -> T | None:
         """Return an unvisited neighbor to `node` if one exists.
 
         This function should be overridden to set the behavior

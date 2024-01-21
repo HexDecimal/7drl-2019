@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import actions.base
 import actions.common
@@ -16,8 +16,8 @@ class Actor(component.base.OwnedComponent):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ticket: Optional[tqueue.Ticket] = None
-        self.action: Optional[actions.base.Action] = None
+        self.ticket: tqueue.Ticket | None = None
+        self.action: actions.base.Action | None = None
 
     def on_added(self, entity: obj.entity.Entity) -> None:
         super().on_added(entity)

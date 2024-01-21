@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import actions.base
 import actions.movement
 import component.graphic
 
 
 class Attack(actions.base.EntityAction):
-    def poll(self) -> Optional[Attack]:
+    def poll(self) -> Attack | None:
         if not self.entity.physicality:
             return None
         if not self.target.physicality:
@@ -26,7 +24,7 @@ class Attack(actions.base.EntityAction):
 
 
 class BumpAttack(actions.base.BumpAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         for target in self.destination.contents:
             if target.actor:
                 return Attack(self.entity, target).poll()

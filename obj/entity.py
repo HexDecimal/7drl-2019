@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import component.base
 import composite
@@ -36,7 +36,7 @@ class Ensure(Generic[T]):
         assert len(obj[self.attr]) <= 1, obj[self.attr]
         return obj[self.attr][0]  # type: ignore
 
-    def __set__(self, obj: Entity, value: Optional[T]) -> None:
+    def __set__(self, obj: Entity, value: T | None) -> None:
         try:
             (old,) = obj[self.attr]
             assert len(obj[self.attr]) == 1, obj[self.attr]
@@ -56,7 +56,7 @@ class Option(Ensure[T]):
         self,
         obj: Entity,
         objtype: Any = None,
-    ) -> Optional[T]:
+    ) -> T | None:
         try:
             return super().__get__(obj, objtype)
         except IndexError:

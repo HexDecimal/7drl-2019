@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import actions.base
 import actions.robot
@@ -14,7 +14,7 @@ class Interactable(component.base.OwnedComponent):
     def interaction(
         self,
         entity: obj.entity.Entity,
-    ) -> Optional[actions.base.Action]:
+    ) -> actions.base.Action | None:
         return None
 
 
@@ -22,7 +22,7 @@ class TakeControlInteractable(Interactable):
     def interaction(
         self,
         entity: obj.entity.Entity,
-    ) -> Optional[actions.base.Action]:
+    ) -> actions.base.Action | None:
         return actions.robot.RemoteControl(entity, self.owner).poll()
 
 
@@ -33,5 +33,5 @@ class Interaction(Interactable):
     def interaction(
         self,
         entity: obj.entity.Entity,
-    ) -> Optional[actions.base.Action]:
+    ) -> actions.base.Action | None:
         return self.Action(entity, self.owner).poll()

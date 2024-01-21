@@ -4,7 +4,7 @@ import itertools
 import random
 import sys
 from collections.abc import Iterator
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np  # type: ignore
 import scipy.signal  # type: ignore
@@ -159,7 +159,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
     def select_neighbor(
         self,
         node: tuple[int, int, int],
-    ) -> Optional[tuple[int, int, int]]:
+    ) -> tuple[int, int, int] | None:
         """Return an unvisited neighbor to `node` if one exists.
 
         This function should be overridden to set the behavior
@@ -210,7 +210,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
     def visit(
         self,
         node: tuple[int, int, int],
-        prev: Optional[tuple[int, int, int]],
+        prev: tuple[int, int, int] | None,
     ) -> None:
         super().visit(node, prev)
         self.visited[node] = True
@@ -273,7 +273,7 @@ class Ship:
     room_width = 4
     room_height = 4
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         if seed is None:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)

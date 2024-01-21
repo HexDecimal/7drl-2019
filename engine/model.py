@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import obj.item
 import obj.living
@@ -25,6 +25,6 @@ class Model:
         self.log = []
 
     @property
-    def controlled(self) -> Optional[obj.entity.Entity]:
+    def controlled(self) -> obj.entity.Entity | None:
         """The active player controlled entity,"""
         return self.zone.player

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import component.container
 import component.graphic
@@ -32,14 +32,14 @@ class DriveCore(Machine):
 
     class Interactable(Machine.Interactable):
         class Action(Machine.Interactable.Action):
-            def get_core(self) -> Optional[obj.entity.Entity]:
+            def get_core(self) -> obj.entity.Entity | None:
                 assert self.entity.container
                 for item in self.entity.container.contents:
                     if item.item and "drive core" in item.item.tags:
                         return item
                 return None
 
-            def poll(self) -> Optional[actions.base.Action]:
+            def poll(self) -> actions.base.Action | None:
                 assert self.entity.container
                 if self.get_core():
                     return self

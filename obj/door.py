@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import actions.base
 import component.graphic
 import component.physicality
@@ -32,5 +30,5 @@ class AutoDoor(obj.entity.Entity):
         def interaction(
             self,
             entity: obj.entity.Entity,
-        ) -> Optional[actions.base.Action]:
+        ) -> actions.base.Action | None:
             return self.OpenDoor(entity, self.owner)

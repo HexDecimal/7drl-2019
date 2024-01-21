@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import component.graphic
 import g
@@ -28,11 +28,11 @@ class Action:
             self.entity.actor.schedule(interval)
         return True
 
-    def poll(self) -> Optional[Action]:
+    def poll(self) -> Action | None:
         """Return an action which would be valid."""
         return self
 
-    def action(self) -> Optional[int]:
+    def action(self) -> int | None:
         """Perform the action.
 
         This should never be called unless poll returns True.
@@ -76,7 +76,7 @@ class EntityAction(Action):
         super().__init__(entity)
         self.target = target
 
-    def poll(self) -> Optional[Action]:
+    def poll(self) -> Action | None:
         if self.target.is_alive():
             return self
         return None

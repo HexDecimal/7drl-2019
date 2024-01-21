@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 import actions.base
 import actions.combat
 import actions.movement
@@ -15,14 +13,14 @@ class Wait(actions.base.Action):
 
 
 class Interact(actions.base.EntityAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         for interactable in self.target[Interactable]:
             return interactable.interaction(self.entity)
         return None
 
 
 class BumpInteract(actions.base.BumpAction):
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         for target in self.destination.contents:
             for interactable in target[Interactable]:
                 return Interact(self.entity, target).poll()
@@ -44,7 +42,7 @@ class Bump(actions.base.Action):
         actions.combat.BumpAttack,
     )
 
-    def poll(self) -> Optional[actions.base.Action]:
+    def poll(self) -> actions.base.Action | None:
         for action_type in self.ACTIONS:
             action = action_type(self.entity, self.direction).poll()
             if action is not None:
@@ -55,7 +53,7 @@ class Bump(actions.base.Action):
 class PlayerControl(actions.base.Action):
     """Give immediate user control to this entity."""
 
-    def action(self) -> Optional[int]:
+    def action(self) -> int | None:
         assert self.entity
         assert self.entity.actor
         self.entity.actor.controlled = True
