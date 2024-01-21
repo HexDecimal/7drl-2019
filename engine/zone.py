@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Final
 
-import numpy as np  # type: ignore
+import numpy as np
 import tcod.console
 
 import component.location
 import g
 import obj.entity
 import tiles
-import tqueue
+from tqueue import tqueue
 
 if TYPE_CHECKING:
     import procgen.shipgen
 
 
 class Zone:
-    DTYPE: Any = [("tile", tiles.DTYPE), ("room_id", np.int16)]
+    DTYPE: Final = [("tile", tiles.DTYPE), ("room_id", np.int16)]
     locations: dict[tuple[int, int, int], component.location.Location]
     room_types: dict[int, procgen.shipgen.RoomType]
 

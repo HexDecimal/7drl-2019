@@ -6,9 +6,10 @@ import sys
 from collections.abc import Iterator
 from typing import Any
 
-import numpy as np  # type: ignore
+import numpy as np
 import scipy.signal  # type: ignore
 import tcod.libtcodpy
+from numpy.typing import NDArray
 
 import engine.zone
 import obj.door
@@ -42,14 +43,14 @@ class RoomType:
     def __str__(self) -> str:
         return self.name
 
-    def get_area(self, room_id: int, ship: Ship) -> np.array:
-        area = ship.zone.data["room_id"] == room_id
+    def get_area(self, room_id: int, ship: Ship) -> NDArray[np.bool_]:
+        area: NDArray[np.bool_] = ship.zone.data["room_id"] == room_id
         area &= ship.zone.data["tile"]["walkable"] != 0
         return area
 
     def finalize(self, room_id: int, ship: Ship) -> None:
         for xyz in ship.np_sample(self.get_area(room_id, ship), 1):
-            obj.item.Item(ship.zone[xyz])  # type: ignore
+            obj.item.Item(ship.zone[xyz])
 
 
 class Corridor(RoomType):
@@ -81,8 +82,8 @@ class Hangar(RoomType):
 
     def finalize(self, room_id: int, ship: Ship) -> None:
         pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
-        ship.player = obj.living.Player(ship.zone[pos1])  # type: ignore
-        obj.robot.Robot(ship.zone[pos2])  # type: ignore
+        ship.player = obj.living.Player(ship.zone[pos1])
+        obj.robot.Robot(ship.zone[pos2])
 
 
 class BasePowerRoom(RoomType):
@@ -100,8 +101,8 @@ class DriveCore(BasePowerRoom):
 
     def finalize(self, room_id: int, ship: Ship) -> None:
         pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
-        obj.machine.DriveCore(ship.zone[pos1])  # type: ignore
-        obj.item.SpareCore(ship.zone[pos2])  # type: ignore
+        obj.machine.DriveCore(ship.zone[pos1])
+        obj.item.SpareCore(ship.zone[pos2])
 
 
 class Solars(BasePowerRoom):
@@ -279,7 +280,7 @@ class Ship:
         self.rng = random.Random(seed)
         self.generate()
 
-    def np_sample(self, array: np.array, k: int) -> list[tuple[Any, ...]]:
+    def np_sample(self, array: NDArray[Any], k: int) -> list[tuple[Any, ...]]:
         if not np.any(array):
             return []
         return self.rng.sample(list(zip(*array.nonzero())), k)
@@ -383,7 +384,7 @@ class Ship:
         i = self.rng.randint(0, len(nz[0]) - 1)
         return nz[0][i], nz[1][i]
 
-    def get_unclaimed_cells(self) -> np.array:
+    def get_unclaimed_cells(self) -> NDArray[np.bool_]:
         claimed = self.rooms > 0
         free = self.rooms == 0
         neigbors = scipy.signal.convolve(
@@ -395,7 +396,7 @@ class Ship:
             ],
             mode="same",
         )
-        return (neigbors != 0) & free
+        return (neigbors != 0) & free  # type: ignore[no-any-return]
 
     def finalize(self) -> None:
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:

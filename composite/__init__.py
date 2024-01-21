@@ -1,1 +1,3 @@
-from .composite import Composite, __all__  # noqa: F401
+from .composite import Composite
+
+__all__ = ("Composite",)

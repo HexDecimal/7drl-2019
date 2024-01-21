@@ -16,7 +16,7 @@ class Actor(component.base.OwnedComponent):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ticket: tqueue.Ticket | None = None
+        self.ticket: tqueue.tqueue.Ticket | None = None
         self.action: actions.base.Action | None = None
 
     def on_added(self, entity: obj.entity.Entity) -> None:
@@ -40,7 +40,7 @@ class Actor(component.base.OwnedComponent):
     def act(self) -> actions.base.Action:
         return actions.common.Wait(self.owner)
 
-    def __call__(self, ticket: tqueue.Ticket) -> None:
+    def __call__(self, ticket: tqueue.tqueue.Ticket) -> None:
         if self.ticket is ticket:
             self.ticket = None
             self.action = None

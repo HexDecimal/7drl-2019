@@ -8,12 +8,52 @@ import actions.inventory
 import actions.robot
 import g
 
+WAIT_KEYS = (
+    tcod.event.KeySym.COMMA,
+    tcod.event.KeySym.KP_5,
+    tcod.event.KeySym.CLEAR,
+)
+DIR_KEYS = {
+    tcod.event.KeySym.LEFT: (-1, 0),
+    tcod.event.KeySym.RIGHT: (1, 0),
+    tcod.event.KeySym.UP: (0, -1),
+    tcod.event.KeySym.DOWN: (0, 1),
+    tcod.event.KeySym.HOME: (-1, -1),
+    tcod.event.KeySym.END: (-1, 1),
+    tcod.event.KeySym.PAGEUP: (1, -1),
+    tcod.event.KeySym.PAGEDOWN: (1, 1),
+    tcod.event.KeySym.KP_4: (-1, 0),
+    tcod.event.KeySym.KP_6: (1, 0),
+    tcod.event.KeySym.KP_8: (0, -1),
+    tcod.event.KeySym.KP_2: (0, 1),
+    tcod.event.KeySym.KP_7: (-1, -1),
+    tcod.event.KeySym.KP_1: (-1, 1),
+    tcod.event.KeySym.KP_9: (1, -1),
+    tcod.event.KeySym.KP_3: (1, 1),
+    tcod.event.KeySym.h: (-1, 0),
+    tcod.event.KeySym.l: (1, 0),
+    tcod.event.KeySym.k: (0, -1),
+    tcod.event.KeySym.j: (0, 1),
+    tcod.event.KeySym.y: (-1, -1),
+    tcod.event.KeySym.b: (-1, 1),
+    tcod.event.KeySym.u: (1, -1),
+    tcod.event.KeySym.n: (1, 1),
+}
+CANCEL_KEYS = (
+    tcod.event.KeySym.BACKSPACE,
+    tcod.event.KeySym.ESCAPE,
+)
+PICKUP_KEYS = (
+    tcod.event.KeySym.g,
+    tcod.event.KeySym.PERIOD,
+)
+
 
 class StateExit(Exception):
     pass
 
 
-class State(tcod.event.EventDispatch):
+class State(tcod.event.EventDispatch[None]):
     def activate(self) -> None:
         self.on_enter()
         try:
@@ -45,46 +85,6 @@ class MainMenu(State):
 
 
 class Game(State):
-    WAIT_KEYS = (
-        tcod.event.KeySym.COMMA,
-        tcod.event.KeySym.KP_5,
-        tcod.event.KeySym.CLEAR,
-    )
-    DIR_KEYS = {
-        tcod.event.KeySym.LEFT: (-1, 0),
-        tcod.event.KeySym.RIGHT: (1, 0),
-        tcod.event.KeySym.UP: (0, -1),
-        tcod.event.KeySym.DOWN: (0, 1),
-        tcod.event.KeySym.HOME: (-1, -1),
-        tcod.event.KeySym.END: (-1, 1),
-        tcod.event.KeySym.PAGEUP: (1, -1),
-        tcod.event.KeySym.PAGEDOWN: (1, 1),
-        tcod.event.KeySym.KP_4: (-1, 0),
-        tcod.event.KeySym.KP_6: (1, 0),
-        tcod.event.KeySym.KP_8: (0, -1),
-        tcod.event.KeySym.KP_2: (0, 1),
-        tcod.event.KeySym.KP_7: (-1, -1),
-        tcod.event.KeySym.KP_1: (-1, 1),
-        tcod.event.KeySym.KP_9: (1, -1),
-        tcod.event.KeySym.KP_3: (1, 1),
-        tcod.event.KeySym.h: (-1, 0),
-        tcod.event.KeySym.l: (1, 0),
-        tcod.event.KeySym.k: (0, -1),
-        tcod.event.KeySym.j: (0, 1),
-        tcod.event.KeySym.y: (-1, -1),
-        tcod.event.KeySym.b: (-1, 1),
-        tcod.event.KeySym.u: (1, -1),
-        tcod.event.KeySym.n: (1, 1),
-    }
-    CANCEL_KEYS = [
-        tcod.event.KeySym.BACKSPACE,
-        tcod.event.KeySym.ESCAPE,
-    ]
-    PICKUP_KEYS = [
-        tcod.event.KeySym.g,
-        tcod.event.KeySym.PERIOD,
-    ]
-
     def on_enter(self) -> None:
         g.model.zone.simulate()
 
@@ -121,13 +121,13 @@ class Game(State):
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         assert g.model.controlled
         player = g.model.controlled
-        if event.sym in self.DIR_KEYS:
-            actions.common.Bump(player, (*self.DIR_KEYS[event.sym], 0)).invoke()
-        elif event.sym in self.WAIT_KEYS:
+        if event.sym in DIR_KEYS:
+            actions.common.Bump(player, (*DIR_KEYS[event.sym], 0)).invoke()
+        elif event.sym in WAIT_KEYS:
             actions.common.Wait(player).invoke()
-        elif event.sym in self.CANCEL_KEYS:
+        elif event.sym in CANCEL_KEYS:
             actions.robot.ReturnControlToPlayer(player).invoke()
-        elif event.sym in self.PICKUP_KEYS:
+        elif event.sym in PICKUP_KEYS:
             actions.inventory.PickupGeneral(player).invoke()
         else:
             print(event)

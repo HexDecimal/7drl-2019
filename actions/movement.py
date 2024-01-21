@@ -64,5 +64,5 @@ class Follow(actions.base.EntityAction):
             return None
         return MoveTo(
             self.entity,
-            self.zone[(*path[0], self.entity.location.xyz[2])],  # type: ignore
+            self.zone[(*path[0], self.entity.location.xyz[2])],
         ).poll()

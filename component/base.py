@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class Null:
-    def __new__(cls, *args: Any, **kargs: Any) -> None:
+    def __new__(cls, *args: Any, **kargs: Any) -> None:  # type: ignore[misc]
         return None
 
 
