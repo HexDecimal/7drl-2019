@@ -8,7 +8,7 @@ from typing import Any, Iterator, List, Optional, Set, Tuple
 
 import numpy as np  # type: ignore
 import scipy.signal  # type: ignore
-import tcod
+import tcod.libtcodpy
 
 from procgen.growingtree import AbstractGrowingTree
 import engine.zone
@@ -255,7 +255,7 @@ class ShipRoomConntector(AbstractGrowingTree[Tuple[int, int, int]]):
     def connect_rooms_debug(
         self, room_a: Tuple[int, int, int], room_b: Tuple[int, int, int],
     ) -> None:
-        line = tcod.line_where(
+        line = tcod.libtcodpy.line_where(
             room_a[0] * self.ship.room_width + 2,
             room_a[1] * self.ship.room_height + 2,
             room_b[0] * self.ship.room_width + 2,

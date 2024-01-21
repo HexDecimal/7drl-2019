@@ -3,30 +3,27 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-import tcod
+import tcod.tileset
+import tcod.console
+import tcod.context
 
 import g
 import state
 import engine.model
 
-FONT: Dict[str, Any] = {
-    "fontFile": "terminal8x12_gs_ro.png",
-    "flags": tcod.FONT_LAYOUT_CP437,
-}
-
 CONFIG: Dict[str, Any] = {
-    "w": 800 // 8,
-    "h": 500 // 12,
+    "width": 800,
+    "height": 500,
     "title": None,
-    "order": "F",
-    "renderer": tcod.RENDERER_SDL2,
+    "tileset": tcod.tileset.load_tilesheet("terminal8x12_gs_ro.png", 16, 16, tcod.tileset.CHARMAP_CP437),
     "vsync": True,
 }
 
+g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, order="F")
 
 def main() -> None:
-    tcod.console_set_custom_font(**FONT)
-    with tcod.console_init_root(**CONFIG) as g.console:
+    with tcod.context.new(**CONFIG) as g.context:
+        g.context
         g.model = engine.model.Model()
         state.Game().activate()
 

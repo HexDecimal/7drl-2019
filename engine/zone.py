@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
-import tcod
+import tcod.console
 import tqueue
 
 import g
