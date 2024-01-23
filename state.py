@@ -7,6 +7,8 @@ import actions.common
 import actions.inventory
 import actions.robot
 import g
+from component.location import Location
+from engine.helpers import active_player, active_zone, get_controlled_actor
 
 WAIT_KEYS = (
     tcod.event.KeySym.COMMA,
@@ -86,10 +88,10 @@ class MainMenu(State):
 
 class Game(State):
     def on_enter(self) -> None:
-        g.model.zone.simulate()
+        active_zone().simulate()
 
     def on_draw(self) -> None:
-        g.model.zone.render(g.console)
+        active_zone().render(g.console)
         self.draw_ui()
         g.context.present(g.console)
 
@@ -98,9 +100,9 @@ class Game(State):
         ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
         ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ord("─"))
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ord("└"))
-        ui_console.print(1, 0, f"Time: {g.model.zone.tqueue.time}")
-        ui_console.print(1, 1, f"Pos: {g.model.player.location.xyz}")
-        room_name = g.model.zone.room_types[g.model.zone.data["room_id"][g.model.player.location.xyz]]
+        ui_console.print(1, 0, f"Time: {active_zone().tqueue.time}")
+        ui_console.print(1, 1, f"Pos: {active_player().components[Location].xyz}")
+        room_name = active_zone().room_types[active_zone().data["room_id"][active_player().components[Location].xyz]]
         ui_console.print(1, 2, f"{room_name}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0, bg_alpha=0.9)
@@ -119,8 +121,7 @@ class Game(State):
         log_console.blit(g.console, 0, g.console.height - log_console.height, bg_alpha=0.9)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
-        assert g.model.controlled
-        player = g.model.controlled
+        player = get_controlled_actor()
         if event.sym in DIR_KEYS:
             actions.common.Bump(player, (*DIR_KEYS[event.sym], 0)).invoke()
         elif event.sym in WAIT_KEYS:
@@ -131,4 +132,4 @@ class Game(State):
             actions.inventory.PickupGeneral(player).invoke()
         else:
             print(event)
-        g.model.zone.simulate()
+        active_zone().simulate()

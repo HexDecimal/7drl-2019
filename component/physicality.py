@@ -1,11 +1,10 @@
-import component.base
+import attrs
 
 
-class Physicality(component.base.OwnedComponent):
-    name = "character"
-    attack_speed = 100
-    move_speed = 100
-    blocking = True
-
-    def __init__(self) -> None:
-        self.hp = 100
+@attrs.define()
+class Physicality:
+    name: str = "character"
+    attack_speed: int = 100
+    move_speed: int = 100
+    blocking: bool = True
+    hp: int = 100

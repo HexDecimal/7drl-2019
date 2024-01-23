@@ -1,28 +1,31 @@
 from __future__ import annotations
 
+import tcod.ecs
+
 import actions.base
 import actions.common
 import component.actor
-import component.container
 import component.graphic
 import component.physicality
 import component.verb
-import obj.entity
+from component.location import Location
 
 
-class Robot(obj.entity.Entity):
-    class Actor(component.actor.Actor):
-        def act(self) -> actions.base.Action:
-            return actions.common.Standby(self.owner)
+class RobotActor(component.actor.Actor):
+    @classmethod
+    def act(cls, entity: tcod.ecs.Entity) -> actions.base.Action:
+        return actions.common.Standby(entity)
 
-    class Physicality(component.physicality.Physicality):
-        name = "robot"
 
-    class Container(component.container.Container):
-        pass
-
-    class Graphic(component.graphic.Graphic):
-        CH = ord("R")
-
-    class Interactable(component.verb.TakeControlInteractable):
-        pass
+def new_robot(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+    new_entity = world[object()]
+    new_entity.components.update(
+        {
+            Location: location,
+            component.physicality.Physicality: component.physicality.Physicality(name="robot"),
+            component.graphic.Graphic: component.graphic.Graphic(ch=ord("R")),
+            component.verb.Interactable: component.verb.TakeControlInteractable(),
+            component.actor.Actor: RobotActor(),
+        }
+    )
+    return new_entity

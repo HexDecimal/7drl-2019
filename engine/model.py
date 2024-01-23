@@ -1,28 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import tcod.ecs
 
-import obj.item
-import obj.living
-import obj.monster
-import obj.robot
+import engine.zone
+import g
 import procgen.shipgen
 
-if TYPE_CHECKING:
-    import engine.zone
-    import obj.entity
 
+def init() -> None:
+    g.world = tcod.ecs.World()
+    g.world[None].components[("log", list[str])] = []
 
-class Model:
-    zone: engine.zone.Zone  # The active zone.
-    player: obj.entity.Entity  # The primary player entity.
-
-    def __init__(self) -> None:
-        ship = procgen.shipgen.Ship(1)
-        self.zone = ship.zone
-        self.player = ship.player
-
-    @property
-    def controlled(self) -> obj.entity.Entity | None:
-        """The active player controlled entity,"""
-        return self.zone.player
+    ship = procgen.shipgen.Ship(1)
+    g.world[None].components[engine.zone.Zone] = ship.zone
+    g.world[None].components[("player", tcod.ecs.Entity)] = ship.player

@@ -12,6 +12,7 @@ import tcod.libtcodpy
 from numpy.typing import NDArray
 
 import engine.zone
+import g
 import obj.door
 import obj.item
 import obj.living
@@ -50,7 +51,7 @@ class RoomType:
 
     def finalize(self, room_id: int, ship: Ship) -> None:
         for xyz in ship.np_sample(self.get_area(room_id, ship), 1):
-            obj.item.Item(ship.zone[xyz])
+            obj.item.new_item(g.world, ship.zone[xyz])
 
 
 class Corridor(RoomType):
@@ -82,8 +83,8 @@ class Hangar(RoomType):
 
     def finalize(self, room_id: int, ship: Ship) -> None:
         pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
-        ship.player = obj.living.Player(ship.zone[pos1])
-        obj.robot.Robot(ship.zone[pos2])
+        ship.player = obj.living.new_player(g.world, ship.zone[pos1])
+        obj.robot.new_robot(g.world, ship.zone[pos2])
 
 
 class BasePowerRoom(RoomType):
@@ -101,8 +102,8 @@ class DriveCore(BasePowerRoom):
 
     def finalize(self, room_id: int, ship: Ship) -> None:
         pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
-        obj.machine.DriveCore(ship.zone[pos1])
-        obj.item.SpareCore(ship.zone[pos2])
+        obj.machine.new_drive_core(g.world, ship.zone[pos1])
+        obj.item.new_spare_core(g.world, ship.zone[pos2])
 
 
 class Solars(BasePowerRoom):
@@ -252,7 +253,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
             self.ship.room_types[self.ship.rooms[room_a]],
             self.ship.room_types[self.ship.rooms[room_b]],
         ).floor
-        obj.door.AutoDoor(self.ship.zone[door])
+        obj.door.new_auto_door(g.world, self.ship.zone[door])
 
     def connect_rooms_debug(
         self,
@@ -270,7 +271,7 @@ class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
 
 class Ship:
     start_position: tuple[int, int, int]
-    player: obj.entity.Entity
+    player: tcod.ecs.Entity
     room_width = 4
     room_height = 4
 
@@ -291,6 +292,7 @@ class Ship:
         self.depth = 1
         self.width = self.half_width * 2 + self.rng.randint(0, 1)
         self.zone = engine.zone.Zone((self.length * self.room_width + 1, self.width * self.room_height + 1, self.depth))
+        g.world[None].components[engine.zone.Zone] = self.zone
 
         self.form = np.zeros((self.depth, self.length), dtype=int)
         self.rooms = np.zeros((self.length, self.width, self.depth), dtype=int, order="F")

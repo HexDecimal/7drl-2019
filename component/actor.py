@@ -1,63 +1,66 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import attrs
+import tcod.ecs
+import tcod.ecs.callbacks
 
 import actions.base
 import actions.common
-import component.base
 import tqueue
-
-if TYPE_CHECKING:
-    import obj.entity
+from engine.helpers import active_zone
 
 
-class Actor(component.base.OwnedComponent):
-    controlled = False
+@attrs.define(kw_only=True)
+class Actor:
+    controlled: bool = False
+    ticket: tqueue.tqueue.Ticket | None = None
+    action: actions.base.Action | None = None
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.ticket: tqueue.tqueue.Ticket | None = None
-        self.action: actions.base.Action | None = None
-
-    def on_added(self, entity: obj.entity.Entity) -> None:
-        super().on_added(entity)
-        self.schedule(0)
-
-    def on_remove(self, entity: obj.entity.Entity) -> None:
-        super().on_remove(entity)
-        self.ticket = None
-
-    def on_destroy(self, entity: obj.entity.Entity) -> None:
-        super().on_destroy(entity)
-        self.owner.actor = None
-
-    def schedule(self, interval: int) -> None:
+    @staticmethod
+    def schedule(entity: tcod.ecs.Entity, interval: int) -> None:
+        self = entity.components[Actor]
         assert self.ticket is None
-        self.ticket = self.zone.tqueue.schedule(interval, self)
-        if self.zone.player is self.owner:
-            self.zone.player = None
+        self.ticket = active_zone().tqueue.schedule(interval, entity)
+        if active_zone().player is entity:
+            active_zone().player = None
 
-    def act(self) -> actions.base.Action:
-        return actions.common.Wait(self.owner)
+    @classmethod
+    def act(cls, entity: tcod.ecs.Entity) -> actions.base.Action:
+        return actions.common.Wait(entity)
 
-    def __call__(self, ticket: tqueue.tqueue.Ticket) -> None:
+    @classmethod
+    def call(cls, ticket: tqueue.tqueue.Ticket, entity: tcod.ecs.Entity) -> None:
+        self = entity.components[Actor]
         if self.ticket is ticket:
             self.ticket = None
             self.action = None
             if not self.controlled:
-                self.action = self.act()
+                self.action = cls.act(entity)
                 if not self.action.invoke():
-                    self.schedule(100)
+                    self.schedule(entity, 100)
             else:
-                actions.common.PlayerControl(self.owner).invoke()
+                actions.common.PlayerControl(entity).invoke()
 
     def is_controlled(self) -> bool:
         return self.controlled
 
-    def take_control(self) -> None:
+    @staticmethod
+    def take_control(entity: tcod.ecs.Entity) -> None:
+        self = entity.components[Actor]
         self.interrupt(True)
-        actions.common.PlayerControl(self.owner).invoke()
+        actions.common.PlayerControl(entity).invoke()
 
     def interrupt(self, force: bool = False) -> None:
         self.ticket = None
         self.action = None
+
+
+@tcod.ecs.callbacks.register_component_changed(component=Actor)
+def on_actor_changed(entity: tcod.ecs.Entity, old: Actor | None, new: Actor | None) -> None:
+    """Handle scheduling on Actor components being added and removed."""
+    if old == new:
+        return
+    if old is not None:
+        entity.components[Actor].ticket = None
+    if new is not None:
+        Actor.schedule(entity, 0)

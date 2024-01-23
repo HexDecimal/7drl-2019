@@ -1,37 +1,24 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import tcod.ecs
 
 import actions.base
 import actions.robot
-import component.base
-
-if TYPE_CHECKING:
-    import obj.entity
 
 
-class Interactable(component.base.OwnedComponent):
-    def interaction(
-        self,
-        entity: obj.entity.Entity,
-    ) -> actions.base.Action | None:
+class Interactable:
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> actions.base.Action | None:
         return None
 
 
 class TakeControlInteractable(Interactable):
-    def interaction(
-        self,
-        entity: obj.entity.Entity,
-    ) -> actions.base.Action | None:
-        return actions.robot.RemoteControl(entity, self.owner).poll()
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> actions.base.Action | None:
+        return actions.robot.RemoteControl(issuer, target).poll()
 
 
 class Interaction(Interactable):
     class Action(actions.base.EntityAction):
         pass
 
-    def interaction(
-        self,
-        entity: obj.entity.Entity,
-    ) -> actions.base.Action | None:
-        return self.Action(entity, self.owner).poll()
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> actions.base.Action | None:
+        return self.Action(issuer, target).poll()

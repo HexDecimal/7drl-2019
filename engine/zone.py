@@ -4,11 +4,14 @@ from typing import TYPE_CHECKING, Final
 
 import numpy as np
 import tcod.console
+import tcod.ecs
 
+import component.actor
 import component.location
 import g
-import obj.entity
 import tiles
+from component.graphic import Graphic
+from engine.helpers import active_player
 from tqueue import tqueue
 
 if TYPE_CHECKING:
@@ -32,17 +35,16 @@ class Zone:
         self.locations = {}
         self.tqueue = tqueue.TurnQueue()
 
-        self.player: obj.entity.Entity | None = None
+        self.player: tcod.ecs.Entity | None = None
 
     def simulate(self) -> None:
         while not self.player:
             ticket = self.tqueue.next()
-            ticket.value(ticket)
-            if not g.model.player.actor:
+            component.actor.Actor.call(ticket, ticket.value)
+            if component.actor.Actor not in active_player().components:
                 msg = "Player has died."
                 raise SystemExit(msg)
-        assert self.player.actor
-        self.player.actor.action = None  # Clear PlayerControl action.
+        self.player.components[component.actor.Actor].action = None  # Clear PlayerControl action.
 
     def render(self, console: tcod.console.Console) -> None:
         console.clear()
@@ -63,12 +65,12 @@ class Zone:
         console.fg[con_view] = tile["fg"]
         console.bg[con_view] = tile["bg"]
 
-        for y in range(console.height):
-            for x in range(console.width):
-                for entity in self[x + cam_x, y + cam_y, cam_z].contents:
-                    if not entity.graphic:
-                        continue
-                    console.ch[x, y], console.fg[x, y] = entity.graphic.get()
+        for entity in g.world.Q.all_of(components=[Graphic, component.location.Location]):
+            loc = entity.components[component.location.Location]
+            x = loc.x - cam_x
+            y = loc.y - cam_y
+            if 0 <= x < console.width and 0 <= y < console.height:
+                console.ch[x, y], console.fg[x, y] = entity.components[Graphic].get()
 
     def __getitem__(
         self,
@@ -76,7 +78,7 @@ class Zone:
     ) -> component.location.Location:
         """Return a location, creating a new one if it doesn't exist."""
         if xyz not in self.locations:
-            self.locations[xyz] = component.location.Location(self, xyz)
+            self.locations[xyz] = component.location.Location(self, *xyz)
         return self.locations[xyz]
 
     @property

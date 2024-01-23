@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from component.base import Component
+import attrs
 
 
-class Item(Component):
-    name = "item"
-    weight = 1
-    tags: set[str] = set()
+@attrs.define(frozen=True)
+class Item:
+    name: str = "item"
+    weight: int = 1
+    tags: frozenset[str] = frozenset()

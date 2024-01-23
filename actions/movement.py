@@ -1,33 +1,31 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import tcod.ecs
 import tcod.path
 
 import actions.base
 import actions.common
-
-if TYPE_CHECKING:
-    import obj.entity
+from component.location import Location
+from component.physicality import Physicality
+from engine.helpers import active_zone
 
 
 class MoveTo(actions.base.LocationAction):
     def poll(self) -> actions.base.Action | None:
         if not self.location.data["tile"]["walkable"]:
             return None
-        for entity in self.location.contents:
-            if entity.physicality and entity.physicality.blocking:
+        for entity in self.entity.world.Q.all_of(tags=[self.location], components=[Physicality]):
+            if entity.components[Physicality].blocking:
                 return None
         return self
 
     def action(self) -> int:
-        assert self.entity.physicality
-        old_xyz = self.entity.location.xyz
+        old_xyz = self.entity.components[Location].xyz
         new_xyz = self.location.xyz
-        self.entity.location = self.location
+        self.entity.components[Location] = self.location
         if old_xyz[0] - new_xyz[0] and old_xyz[1] - new_xyz[1]:
-            return self.entity.physicality.move_speed * 3 // 2
-        return self.entity.physicality.move_speed
+            return self.entity.components[Physicality].move_speed * 3 // 2
+        return self.entity.components[Physicality].move_speed
 
 
 class MoveBy(actions.base.BumpAction):
@@ -37,8 +35,8 @@ class MoveBy(actions.base.BumpAction):
 
 class MoveTowards(actions.base.LocationAction):
     def poll(self) -> actions.base.Action | None:
-        x = self.location.xyz[0] - self.entity.location.xyz[0]
-        y = self.location.xyz[1] - self.entity.location.xyz[1]
+        x = self.location.xyz[0] - self.entity.components[Location].xyz[0]
+        y = self.location.xyz[1] - self.entity.components[Location].xyz[1]
         x //= abs(x)
         y //= abs(y)
         return MoveBy(self.entity, (x, y, 0))
@@ -47,22 +45,22 @@ class MoveTowards(actions.base.LocationAction):
 class Follow(actions.base.EntityAction):
     def __init__(
         self,
-        entity: obj.entity.Entity,
-        target: obj.entity.Entity,
+        entity: tcod.ecs.Entity,
+        target: tcod.ecs.Entity,
     ) -> None:
         super().__init__(entity, target)
-        z = entity.location.xyz[2]
+        z = entity.components[Location].z
         self.pathfinder = tcod.path.AStar(
-            entity.location.zone.data["tile"]["walkable"][:, :, z],
+            entity.components[Location].zone.data["tile"]["walkable"][:, :, z],
         )
 
     def poll(self) -> actions.base.Action | None:
-        my_coord = self.entity.location.xyz[:2]
-        target_coord = self.target.location.xyz[:2]
+        my_coord = self.entity.components[Location].xyz[:2]
+        target_coord = self.target.components[Location].xyz[:2]
         path = self.pathfinder.get_path(*my_coord, *target_coord)
         if len(path) <= 1:
             return None
         return MoveTo(
             self.entity,
-            self.zone[(*path[0], self.entity.location.xyz[2])],
+            active_zone()[(*path[0], self.entity.components[Location].xyz[2])],
         ).poll()

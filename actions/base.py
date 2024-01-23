@@ -1,31 +1,30 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import tcod.ecs
 
+import component.actor
 import component.graphic
+import component.location
 import g
-import obj.entity
-
-if TYPE_CHECKING:
-    import component.location
-    import engine.zone
+from actions import ActionLike
+from component.location import Location
+from component.physicality import Physicality
 
 
-class Action:
-    def __init__(self, entity: obj.entity.Entity) -> None:
+class Action(ActionLike):
+    def __init__(self, entity: tcod.ecs.Entity) -> None:
         self.entity = entity
 
     def invoke(self) -> bool:
         """Attempt the action and return True if the action was performed."""
-        assert self.entity.actor, "Action invoked on a non-actor entity."
         # Ensure this actor was not already scheduled.
-        assert self.entity.actor.ticket is None, "Actor is already waiting after an action."
+        assert self.entity.components[component.actor.Actor].ticket is None, "Actor is already waiting after an action."
         ready_action = self.poll()
         if ready_action is None:
             return False
         interval = ready_action.action()
         if interval is not None:
-            self.entity.actor.schedule(interval)
+            self.entity.components[component.actor.Actor].schedule(self.entity, interval)
         return True
 
     def poll(self) -> Action | None:
@@ -46,20 +45,12 @@ class Action:
         }
         g.world[None].components[("log", list[str])].append(string.format(**FORMAT, **format))
 
-    @property
-    def zone(self) -> engine.zone.Zone:
-        return self.entity.location.zone
-
-    @property
-    def model(self) -> engine.model.Model:
-        return g.model
-
 
 class LocationAction(Action):
     def __init__(
         self,
-        entity: obj.entity.Entity,
-        location: component.location.Location,
+        entity: tcod.ecs.Entity,
+        location: Location,
     ) -> None:
         super().__init__(entity)
         self.location = location
@@ -70,14 +61,14 @@ class EntityAction(Action):
 
     def __init__(
         self,
-        entity: obj.entity.Entity,
-        target: obj.entity.Entity,
+        entity: tcod.ecs.Entity,
+        target: tcod.ecs.Entity,
     ) -> None:
         super().__init__(entity)
         self.target = target
 
     def poll(self) -> Action | None:
-        if self.target.is_alive():
+        if Physicality in self.target.components:
             return self
         return None
 
@@ -87,13 +78,13 @@ class BumpAction(Action):
 
     def __init__(
         self,
-        entity: obj.entity.Entity,
+        entity: tcod.ecs.Entity,
         direction: tuple[int, int, int],
     ) -> None:
         super().__init__(entity)
         self.direction = direction
 
     @property
-    def destination(self) -> component.location.Location:
+    def destination(self) -> Location:
         """Return the location at the destination."""
-        return self.entity.location.get_relative(*self.direction)
+        return self.entity.components[Location].get_relative(*self.direction)

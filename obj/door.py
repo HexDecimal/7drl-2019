@@ -1,34 +1,43 @@
 from __future__ import annotations
 
+from typing import Self
+
+import tcod.ecs
+
 import actions.base
 import component.graphic
 import component.physicality
 import component.verb
-import obj.entity
+from component.location import Location
 
 
-class AutoDoor(obj.entity.Entity):
-    class Physicality(component.physicality.Physicality):
-        pass
+class DoorInteractable(component.verb.Interactable):
+    class OpenDoor(actions.base.EntityAction):
+        def poll(self) -> Self:
+            return self
 
-    class Graphic(component.graphic.Graphic):
-        CH = ord("+")
+        def action(self) -> int:
+            del self.target.components[component.graphic.Graphic]
+            self.target.components[component.physicality.Physicality].blocking = False
+            self.report("{You} open the door.")
+            return 100
 
-    class Interactable(component.verb.Interactable):
-        class OpenDoor(actions.base.EntityAction):
-            def poll(self) -> AutoDoor.Interactable.OpenDoor:
-                return self
+    def interaction(
+        self,
+        issuer: tcod.ecs.Entity,
+        target: tcod.ecs.Entity,
+    ) -> actions.base.Action | None:
+        return self.OpenDoor(issuer, target)
 
-            def action(self) -> int:
-                assert self.target.graphic
-                assert self.target.physicality
-                self.target.graphic = None
-                self.target.physicality.blocking = False
-                self.report("{You} open the door.")
-                return 100
 
-        def interaction(
-            self,
-            entity: obj.entity.Entity,
-        ) -> actions.base.Action | None:
-            return self.OpenDoor(entity, self.owner)
+def new_auto_door(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+    new_entity = world[object()]
+    new_entity.components.update(
+        {
+            Location: location,
+            component.physicality.Physicality: component.physicality.Physicality(),
+            component.graphic.Graphic: component.graphic.Graphic(ch=ord("+")),
+            component.verb.Interactable: DoorInteractable(),
+        }
+    )
+    return new_entity
