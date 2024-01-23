@@ -5,6 +5,7 @@ from typing import Any
 
 import tcod.console
 import tcod.context
+import tcod.ecs
 import tcod.tileset
 
 import engine.model
@@ -24,8 +25,9 @@ g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, o
 
 def main() -> None:
     with tcod.context.new(**CONFIG) as g.context:
-        g.context
+        g.world = tcod.ecs.World()
         g.model = engine.model.Model()
+        g.world[None].components[("log", list[str])] = []
         state.Game().activate()
 
 

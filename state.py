@@ -110,7 +110,7 @@ class Game(State):
         log_console.draw_rect(log_console.width - 1, 1, 1, log_console.height, ord("│"))
         log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
         y = log_console.height
-        for log in reversed(g.model.log):
+        for log in reversed(g.world[None].components["log", list[str]]):
             y -= tcod.console.get_height_rect(log_console.width, log)
             if y < 0:
                 break

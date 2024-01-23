@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import component.graphic
 import g
@@ -39,12 +39,12 @@ class Action:
         """
         raise NotImplementedError()
 
-    def report(self, string: str, **format: Any) -> None:
+    def report(self, string: str, **format: object) -> None:
         FORMAT = {
             "you": "you",
             "You": "You",
         }
-        self.model.log.append(string.format(**FORMAT, **format))
+        g.world[None].components[("log", list[str])].append(string.format(**FORMAT, **format))
 
     @property
     def zone(self) -> engine.zone.Zone:

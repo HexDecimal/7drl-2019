@@ -16,13 +16,11 @@ if TYPE_CHECKING:
 class Model:
     zone: engine.zone.Zone  # The active zone.
     player: obj.entity.Entity  # The primary player entity.
-    log: list[str]
 
     def __init__(self) -> None:
         ship = procgen.shipgen.Ship(1)
         self.zone = ship.zone
         self.player = ship.player
-        self.log = []
 
     @property
     def controlled(self) -> obj.entity.Entity | None:
