@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 
 [tool.mypy] # https://mypy.readthedocs.io/en/stable/config_file.html
 files = "."
-exclude = ['^build/', '^\.']
+exclude = ['^build/', '^\.', 'tqueue']
 explicit_package_bases = true
 python_version = "3.12"
 warn_unused_configs = true

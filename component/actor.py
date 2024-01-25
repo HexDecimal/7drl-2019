@@ -6,14 +6,14 @@ import tcod.ecs.callbacks
 
 import actions.base
 import actions.common
-import tqueue
+import tqueue.tqueue
 from engine.helpers import active_zone
 
 
 @attrs.define(kw_only=True)
 class Actor:
     controlled: bool = False
-    ticket: tqueue.tqueue.Ticket | None = None
+    ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity] | None = None
     action: actions.base.Action | None = None
 
     @staticmethod
@@ -29,7 +29,7 @@ class Actor:
         return actions.common.Wait(entity)
 
     @classmethod
-    def call(cls, ticket: tqueue.tqueue.Ticket, entity: tcod.ecs.Entity) -> None:
+    def call(cls, ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity], entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
         if self.ticket is ticket:
             self.ticket = None

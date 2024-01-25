@@ -33,13 +33,13 @@ class Zone:
         self.data["tile"][1:-1, 1:-1, :] = tiles.metal_floor
 
         self.locations = {}
-        self.tqueue = tqueue.TurnQueue()
+        self.tqueue: tqueue.TurnQueue[tcod.ecs.Entity] = tqueue.TurnQueue()
 
         self.player: tcod.ecs.Entity | None = None
 
     def simulate(self) -> None:
         while not self.player:
-            ticket = self.tqueue.next()
+            ticket = self.tqueue.pop()
             component.actor.Actor.call(ticket, ticket.value)
             if component.actor.Actor not in active_player().components:
                 msg = "Player has died."
