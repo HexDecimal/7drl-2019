@@ -16,4 +16,23 @@
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
+    "cSpell.words": [
+        "astype",
+        "blit",
+        "dtype",
+        "Interactable",
+        "keydown",
+        "kron",
+        "libtcodpy",
+        "PAGEDOWN",
+        "PAGEUP",
+        "procgen",
+        "shipgen",
+        "Solars",
+        "tcod",
+        "tileset",
+        "tilesheet",
+        "tqueue",
+        "vsync"
+    ],
 }

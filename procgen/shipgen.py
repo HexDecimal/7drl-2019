@@ -19,7 +19,7 @@ import obj.living
 import obj.machine
 import obj.robot
 import tiles
-from procgen.growingtree import AbstractGrowingTree
+from procgen.growing_tree import AbstractGrowingTree
 
 
 class ProcGenException(Exception):
@@ -123,7 +123,7 @@ class Bridge(RoomType):
     max_size = (4, 4)
 
 
-class ShipRoomConntector(AbstractGrowingTree[tuple[int, int, int]]):
+class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
     CARDINALS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
     def __init__(self, ship: Ship) -> None:
@@ -389,7 +389,7 @@ class Ship:
     def get_unclaimed_cells(self) -> NDArray[np.bool_]:
         claimed = self.rooms > 0
         free = self.rooms == 0
-        neigbors = scipy.signal.convolve(
+        neighbors = scipy.signal.convolve(
             in1=claimed,
             in2=[
                 [0, 1, 0],
@@ -398,7 +398,7 @@ class Ship:
             ],
             mode="same",
         )
-        return (neigbors != 0) & free  # type: ignore[no-any-return]
+        return (neighbors != 0) & free  # type: ignore[no-any-return]
 
     def finalize(self) -> None:
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:
@@ -424,7 +424,7 @@ class Ship:
             room_type = get_room_type(cx, cy, cz)
             left_type = get_room_type(cx - 1, cy, cz)
             top_type = get_room_type(cx, cy - 1, cz)
-            topleft_type = get_room_type(cx - 1, cy - 1, cz)
+            top_left_type = get_room_type(cx - 1, cy - 1, cz)
 
             left = cx * self.room_width
             top = cy * self.room_height
@@ -433,9 +433,9 @@ class Ship:
 
             left_tile = get_merge_tile(room_type, left_type)
             top_tile = get_merge_tile(room_type, top_type)
-            topleft_tile = get_merge_tile(room_type, left_type, top_type, topleft_type)
+            top_left_tile = get_merge_tile(room_type, left_type, top_type, top_left_type)
 
-            self.zone.data["tile"][left, top, cz] = topleft_tile
+            self.zone.data["tile"][left, top, cz] = top_left_tile
             self.zone.data["tile"][left + 1 : right, top, cz] = top_tile
             self.zone.data["tile"][left, top + 1 : bottom, cz] = left_tile
             self.zone.data["tile"][left + 1 : right, top + 1 : bottom, cz] = room_type.floor
@@ -444,7 +444,7 @@ class Ship:
         self.zone.data["room_id"][:-1, :-1, :] = np.kron(self.rooms, np.ones((self.room_width, self.room_height, 1)))
         self.zone.room_types = self.room_types
 
-        ShipRoomConntector(self).generate()
+        ShipRoomConnector(self).generate()
 
         for room_id, room in self.room_types.items():
             room.finalize(room_id, self)
