@@ -10,7 +10,7 @@ import tcod.tileset
 
 import engine.model
 import g
-import state
+import game.state
 
 CONFIG: dict[str, Any] = {
     "width": 800,
@@ -26,7 +26,7 @@ g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, o
 def main() -> None:
     with tcod.context.new(**CONFIG) as g.context:
         engine.model.init()
-        state.Game().activate()
+        game.state.Game().activate()
 
 
 if __name__ == "__main__":
