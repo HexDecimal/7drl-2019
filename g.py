@@ -1,4 +1,5 @@
 """Global mutable variables are stored here."""
+
 from __future__ import annotations
 
 import tcod.console
