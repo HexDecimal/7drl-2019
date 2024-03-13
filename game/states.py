@@ -1,4 +1,5 @@
 """Derived state classes."""
+
 from __future__ import annotations
 
 import attrs
