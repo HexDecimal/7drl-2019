@@ -1,8 +1,33 @@
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Protocol, TypeAlias
 
+import attrs
 import tcod.ecs
+
+
+@attrs.define
+class Success:
+    """Action performed successfully."""
+
+    time_cost: int = 100
+
+
+@attrs.define
+class Impossible:
+    """Action can not be performed."""
+
+    reason: str
+
+
+ActionResult: TypeAlias = Success | Impossible  # noqa: UP040
+
+
+class Action(Protocol):
+    """Base action protocol."""
+
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        """Action call parameters."""
 
 
 class ActionLike(Protocol):

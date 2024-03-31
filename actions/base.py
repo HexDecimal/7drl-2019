@@ -6,7 +6,7 @@ import component.actor
 import component.graphic
 import component.location
 import g
-from actions import ActionLike
+from actions import ActionLike, ActionResult, Impossible, Success
 from component.location import Location
 from component.physicality import Physicality
 
@@ -19,13 +19,20 @@ class Action(ActionLike):
         """Attempt the action and return True if the action was performed."""
         # Ensure this actor was not already scheduled.
         assert self.entity.components[component.actor.Actor].ticket is None, "Actor is already waiting after an action."
+        match self.perform(self.entity):
+            case Success(time_cost=time_cost):
+                self.entity.components[component.actor.Actor].schedule(self.entity, time_cost)
+        return True
+
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        """Adapt actions into the simpler protocol."""
         ready_action = self.poll()
         if ready_action is None:
-            return False
+            return Impossible("Action not resolved.")
         interval = ready_action.action()
-        if interval is not None:
-            self.entity.components[component.actor.Actor].schedule(self.entity, interval)
-        return True
+        if interval is None:
+            return Impossible("Action failed.")
+        return Success(interval)
 
     def poll(self) -> Action | None:
         """Return an action which would be valid."""
