@@ -25,8 +25,8 @@ class Actor:
             active_zone().player = None
 
     @classmethod
-    def act(cls, entity: tcod.ecs.Entity) -> actions.base.Action:
-        return actions.common.Wait(entity)
+    def act(cls, entity: tcod.ecs.Entity) -> actions.Action:
+        return actions.common.Wait()
 
     @classmethod
     def call(cls, ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity], entity: tcod.ecs.Entity) -> None:
@@ -36,10 +36,10 @@ class Actor:
             self.action = None
             if not self.controlled:
                 self.action = cls.act(entity)
-                if not self.action.invoke():
+                if not self.action.perform(entity):
                     self.schedule(entity, 100)
             else:
-                actions.common.PlayerControl(entity).invoke()
+                actions.common.PlayerControl().perform(entity)
 
     def is_controlled(self) -> bool:
         return self.controlled
@@ -48,7 +48,7 @@ class Actor:
     def take_control(entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
         self.interrupt(True)
-        actions.common.PlayerControl(entity).invoke()
+        actions.common.PlayerControl().perform(entity)
 
     def interrupt(self, force: bool = False) -> None:
         self.ticket = None

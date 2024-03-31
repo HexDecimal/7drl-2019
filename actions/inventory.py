@@ -2,34 +2,40 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from actions.base import Action, EntityAction
+import attrs
+import tcod.ecs
+
+from actions import ActionResult, Impossible, Success
 from component.item import Item
 from component.location import Location
+from game.actions import report
 
 
-class PickupItem(EntityAction):
-    def poll(self) -> PickupItem | None:
+@attrs.define()
+class PickupItem:
+    target: tcod.ecs.Entity
+
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
         if "IsItem" not in self.target.tags:
-            return None
-        return self
+            return Impossible("Not an item.")
 
-    def action(self) -> int | None:
         del self.target.components[Location]
-        self.target.relation_tag["IsIn"] = self.entity
-        self.report("{You} pick up the {item}.", item=self.target.components[Item].name)
-        return 100
+        self.target.relation_tag["IsIn"] = entity
+        report(entity, "{You} pick up the {item}.", item=self.target.components[Item].name)
+        return Success()
 
 
-class PickupGeneral(Action):
-    def get_items(self) -> Iterator[PickupItem]:
-        loc = self.entity.components[Location]
-        for target in self.entity.world.Q.all_of(tags=[loc, "IsItem"]):
-            action = PickupItem(self.entity, target).poll()
+@attrs.define()
+class PickupGeneral:
+    def get_items(self, entity: tcod.ecs.Entity) -> Iterator[ActionResult]:
+        loc = entity.components[Location]
+        for target in entity.world.Q.all_of(tags=[loc, "IsItem"]):
+            action = PickupItem(target).perform(entity)
             if action:
                 yield action
 
-    def poll(self) -> Action | None:
-        actions = list(self.get_items())
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        actions = list(self.get_items(entity))
         if actions:
             return actions[0]
-        return None
+        return Impossible("No items on floor.")

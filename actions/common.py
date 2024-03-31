@@ -1,67 +1,65 @@
 from __future__ import annotations
 
+import attrs
 import tcod.ecs
 
 import actions.base
 import actions.combat
 import actions.movement
 import component.actor
+from actions import ActionResult, Impossible, Success
 from component.location import Location
 from component.verb import Interactable
 
 
-class Wait(actions.base.Action):
-    def action(self) -> int:
-        return 100
+class Wait:
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        return Success()
 
 
-class Interact(actions.base.EntityAction):
-    def poll(self) -> actions.base.Action | None:
+@attrs.define()
+class Interact:
+    target: tcod.ecs.Entity
+
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
         if Interactable in self.target.components:
-            return self.target.components[Interactable].interaction(self.entity, self.target)
-        return None
+            return self.target.components[Interactable].interaction(entity, self.target)
+        return Impossible("Not interactable.")
 
 
+@attrs.define()
 class BumpInteract(actions.base.BumpAction):
-    def poll(self) -> actions.base.Action | None:
-        for target in self.entity.world.Q.all_of(tags=[self.destination], components=[Interactable]):
-            return Interact(self.entity, target).poll()
-        return None
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        destination = entity.components[Location] + self.direction
+        for target in entity.world.Q.all_of(tags=[destination], components=[Interactable]):
+            return Interact(target).perform(entity)
+        return Impossible("No target.")
 
 
-class Bump(actions.base.Action):
-    def __init__(
-        self,
-        entity: tcod.ecs.Entity,
-        direction: tuple[int, int, int],
-    ) -> None:
-        super().__init__(entity)
-        self.direction = direction
+@attrs.define()
+class Bump:
+    direction: tuple[int, int, int]
 
-    ACTIONS = (
-        actions.movement.MoveBy,
-        BumpInteract,
-        actions.combat.BumpAttack,
-    )
-
-    def poll(self) -> actions.base.Action | None:
-        for action_type in self.ACTIONS:
-            action = action_type(self.entity, self.direction).poll()
-            if action is not None:
-                return action
-        return None
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        return (
+            actions.movement.MoveBy(self.direction).perform(entity)
+            or BumpInteract(self.direction).perform(entity)
+            or actions.combat.BumpAttack(self.direction).perform(entity)
+        )
 
 
-class PlayerControl(actions.base.Action):
+@attrs.define()
+class PlayerControl:
     """Give immediate user control to this entity."""
 
-    def action(self) -> int | None:
-        self.entity.components[component.actor.Actor].controlled = True
-        self.entity.components[Location].zone.camera = self.entity.components[Location].xyz
-        self.entity.components[Location].zone.player = self.entity
-        return None  # Further actions will be pending.
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        entity.components[component.actor.Actor].controlled = True
+        entity.components[Location].zone.camera = entity.components[Location].xyz
+        entity.components[Location].zone.player = entity
+        return Impossible("End of action.")  # Further actions will be pending.
 
 
-class Standby(actions.base.Action):
-    def action(self) -> None:
-        return None
+@attrs.define()
+class Standby:
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        return Impossible("End of action.")

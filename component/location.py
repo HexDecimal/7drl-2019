@@ -39,6 +39,11 @@ class Location:
     def data(self) -> Any:
         return self.zone.data[self.x, self.y, self.z]
 
+    def __add__(self, other: tuple[int, int, int]) -> Location:
+        """Return a location relative to this one."""
+        x, y, z = other
+        return self.__class__(self.zone, self.x + x, self.y + y, self.z + z)
+
 
 @tcod.ecs.callbacks.register_component_changed(component=Location)
 def on_location_changed(entity: tcod.ecs.Entity, old: Location | None, new: Location | None) -> None:

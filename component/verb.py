@@ -1,24 +1,30 @@
 from __future__ import annotations
 
+import attrs
 import tcod.ecs
 
 import actions.base
 import actions.robot
+from actions import ActionResult, Impossible
 
 
 class Interactable:
-    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> actions.base.Action | None:
-        return None
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
+        return Impossible("No interaction.")
 
 
 class TakeControlInteractable(Interactable):
-    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> actions.base.Action | None:
-        return actions.robot.RemoteControl(issuer, target).poll()
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
+        return actions.robot.RemoteControl(target).perform(issuer)
 
 
 class Interaction(Interactable):
-    class Action(actions.base.EntityAction):
-        pass
+    @attrs.define()
+    class Action(actions.Action):
+        target: tcod.ecs.Entity
 
-    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> actions.base.Action | None:
-        return self.Action(issuer, target).poll()
+        def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+            return Impossible("No interaction.")
+
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
+        return self.Action(target).perform(issuer)

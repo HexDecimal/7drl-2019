@@ -1,33 +1,25 @@
 from __future__ import annotations
 
-from typing import Self
-
 import tcod.ecs
 
-import actions.base
 import component.graphic
 import component.physicality
 import component.verb
+from actions import ActionResult, Success
 from component.location import Location
+from game.actions import report
 
 
 class DoorInteractable(component.verb.Interactable):
-    class OpenDoor(actions.base.EntityAction):
-        def poll(self) -> Self:
-            return self
-
-        def action(self) -> int:
-            del self.target.components[component.graphic.Graphic]
-            self.target.components[component.physicality.Physicality].blocking = False
-            self.report("{You} open the door.")
-            return 100
-
     def interaction(
         self,
         issuer: tcod.ecs.Entity,
         target: tcod.ecs.Entity,
-    ) -> actions.base.Action | None:
-        return self.OpenDoor(issuer, target)
+    ) -> ActionResult:
+        del target.components[component.graphic.Graphic]
+        target.components[component.physicality.Physicality].blocking = False
+        report(issuer, "{You} open the door.")
+        return Success()
 
 
 def new_auto_door(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:

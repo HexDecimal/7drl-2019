@@ -1,0 +1,25 @@
+from __future__ import annotations
+
+import tcod.ecs
+
+import actions
+import component.actor
+from actions import Success
+
+
+def do_action(actor: tcod.ecs.Entity, action: actions.Action) -> bool:
+    """Attempt the action and return True if the action was performed."""
+    # Ensure this actor was not already scheduled.
+    assert actor.components[component.actor.Actor].ticket is None, "Actor is already waiting after an action."
+    match action.perform(actor):
+        case Success(time_cost=time_cost):
+            actor.components[component.actor.Actor].schedule(actor, time_cost)
+    return True
+
+
+def report(obj: tcod.ecs.Entity, string: str, **format: object) -> None:
+    FORMAT = {
+        "you": "you",
+        "You": "You",
+    }
+    obj.registry[None].components[("log", list[str])].append(string.format(**FORMAT, **format))

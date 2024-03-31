@@ -1,32 +1,34 @@
 from __future__ import annotations
 
-import actions.base
+import attrs
+import tcod.ecs
+
 import component.actor
+from actions import ActionResult, Impossible, Success
 from engine.helpers import active_player
+from game.actions import report
 
 
-class ReturnControlToPlayer(actions.base.Action):
-    def poll(self) -> ReturnControlToPlayer | None:
-        if self.entity is active_player():
-            return None
-        return self
-
-    def action(self) -> int:
+@attrs.define()
+class ReturnControlToPlayer:
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
         player = active_player()
-        self.entity.components[component.actor.Actor].controlled = False
+        if entity is player:
+            return Impossible("Already player.")
+        entity.components[component.actor.Actor].controlled = False
         component.actor.Actor.take_control(player)
-        self.report("{You} stop controlling the robot.")
-        return 0
+        report(entity, "{You} stop controlling the robot.")
+        return Success(time_cost=0)
 
 
-class RemoteControl(actions.base.EntityAction):
-    def poll(self) -> actions.base.Action | None:
+@attrs.define()
+class RemoteControl:
+    target: tcod.ecs.Entity
+
+    def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
         if self.target is active_player():
-            return ReturnControlToPlayer(self.entity)
-        return self
-
-    def action(self) -> int:
-        self.entity.components[component.actor.Actor].controlled = False
+            return ReturnControlToPlayer().perform(entity)
+        entity.components[component.actor.Actor].controlled = False
         component.actor.Actor.take_control(self.target)
-        self.report("{You} begin controlling the robot remotely.")
-        return 0
+        report(entity, "{You} begin controlling the robot remotely.")
+        return Success(time_cost=0)

@@ -12,6 +12,7 @@ import actions.robot
 import g
 from component.location import Location
 from engine.helpers import active_player, active_zone, get_controlled_actor
+from game.actions import do_action
 from game.state import State, StateResult
 
 WAIT_KEYS = (
@@ -102,13 +103,13 @@ class Game(State):
         if isinstance(event, tcod.event.KeyDown):
             player = get_controlled_actor()
             if event.sym in DIR_KEYS:
-                actions.common.Bump(player, (*DIR_KEYS[event.sym], 0)).invoke()
+                do_action(player, actions.common.Bump((*DIR_KEYS[event.sym], 0)))
             elif event.sym in WAIT_KEYS:
-                actions.common.Wait(player).invoke()
+                do_action(player, actions.common.Wait())
             elif event.sym in CANCEL_KEYS:
-                actions.robot.ReturnControlToPlayer(player).invoke()
+                do_action(player, actions.robot.ReturnControlToPlayer())
             elif event.sym in PICKUP_KEYS:
-                actions.inventory.PickupGeneral(player).invoke()
+                do_action(player, actions.inventory.PickupGeneral())
             else:
                 print(event)
             active_zone().simulate()

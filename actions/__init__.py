@@ -19,12 +19,18 @@ class Impossible:
 
     reason: str
 
+    def __bool__(self) -> bool:
+        """Impossible results are falsy."""
+        return False
+
 
 ActionResult: TypeAlias = Success | Impossible  # noqa: UP040
 
 
 class Action(Protocol):
     """Base action protocol."""
+
+    __slots__ = ()
 
     def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
         """Action call parameters."""
