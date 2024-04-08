@@ -4,17 +4,17 @@ import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
 
-import actions.base
-import actions.common
+import game.actions
 import tqueue.tqueue
 from engine.helpers import active_zone
+from game.action import Action
 
 
 @attrs.define(kw_only=True)
 class Actor:
     controlled: bool = False
     ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity] | None = None
-    action: actions.base.Action | None = None
+    action: Action | None = None
 
     @staticmethod
     def schedule(entity: tcod.ecs.Entity, interval: int) -> None:
@@ -25,8 +25,8 @@ class Actor:
             active_zone().player = None
 
     @classmethod
-    def act(cls, entity: tcod.ecs.Entity) -> actions.Action:
-        return actions.common.Wait()
+    def act(cls, entity: tcod.ecs.Entity) -> Action:
+        return game.actions.wait
 
     @classmethod
     def call(cls, ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity], entity: tcod.ecs.Entity) -> None:
@@ -36,10 +36,10 @@ class Actor:
             self.action = None
             if not self.controlled:
                 self.action = cls.act(entity)
-                if not self.action.perform(entity):
+                if not self.action.__call__(entity):
                     self.schedule(entity, 100)
             else:
-                actions.common.PlayerControl().perform(entity)
+                game.actions.PlayerControl().__call__(entity)
 
     def is_controlled(self) -> bool:
         return self.controlled
@@ -48,7 +48,7 @@ class Actor:
     def take_control(entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
         self.interrupt(True)
-        actions.common.PlayerControl().perform(entity)
+        game.actions.PlayerControl().__call__(entity)
 
     def interrupt(self, force: bool = False) -> None:
         self.ticket = None

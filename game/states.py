@@ -6,13 +6,11 @@ import attrs
 import tcod.console
 import tcod.event
 
-import actions.common
-import actions.inventory
-import actions.robot
 import g
+import game.actions
 from component.location import Location
 from engine.helpers import active_player, active_zone, get_controlled_actor
-from game.actions import do_action
+from game.action_logic import do_action
 from game.state import State, StateResult
 
 WAIT_KEYS = (
@@ -103,13 +101,13 @@ class Game(State):
         if isinstance(event, tcod.event.KeyDown):
             player = get_controlled_actor()
             if event.sym in DIR_KEYS:
-                do_action(player, actions.common.Bump((*DIR_KEYS[event.sym], 0)))
+                do_action(player, game.actions.Bump((*DIR_KEYS[event.sym], 0)))
             elif event.sym in WAIT_KEYS:
-                do_action(player, actions.common.Wait())
+                do_action(player, game.actions.wait)
             elif event.sym in CANCEL_KEYS:
-                do_action(player, actions.robot.ReturnControlToPlayer())
+                do_action(player, game.actions.ReturnControlToPlayer())
             elif event.sym in PICKUP_KEYS:
-                do_action(player, actions.inventory.PickupGeneral())
+                do_action(player, game.actions.PickupGeneral())
             else:
                 print(event)
             active_zone().simulate()

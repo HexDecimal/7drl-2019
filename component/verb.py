@@ -3,9 +3,9 @@ from __future__ import annotations
 import attrs
 import tcod.ecs
 
-import actions.base
-import actions.robot
-from actions import ActionResult, Impossible
+import game.action
+import game.actions
+from game.action import ActionResult, Impossible
 
 
 class Interactable:
@@ -15,16 +15,16 @@ class Interactable:
 
 class TakeControlInteractable(Interactable):
     def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
-        return actions.robot.RemoteControl(target).perform(issuer)
+        return game.actions.RemoteControl(target).__call__(issuer)
 
 
 class Interaction(Interactable):
     @attrs.define()
-    class Action(actions.Action):
+    class Action(game.action.Action):
         target: tcod.ecs.Entity
 
-        def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
             return Impossible("No interaction.")
 
     def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
-        return self.Action(target).perform(issuer)
+        return self.Action(target).__call__(issuer)

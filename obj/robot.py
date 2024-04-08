@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import tcod.ecs
 
-import actions.base
-import actions.common
 import component.actor
 import component.graphic
 import component.physicality
 import component.verb
+import game.actions
 from component.location import Location
+from game.action import Action
 
 
 class RobotActor(component.actor.Actor):
     @classmethod
-    def act(cls, entity: tcod.ecs.Entity) -> actions.base.Action:
-        return actions.common.Standby(entity)
+    def act(cls, entity: tcod.ecs.Entity) -> Action:
+        return game.actions.Standby()
 
 
 def new_robot(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:

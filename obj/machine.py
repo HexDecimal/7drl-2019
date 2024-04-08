@@ -6,9 +6,9 @@ import tcod.ecs
 import component.graphic
 import component.physicality
 import component.verb
-from actions import ActionResult, Impossible, Success
 from component.location import Location
-from game.actions import report
+from game.action import ActionResult, Impossible, Success
+from game.action_logic import report
 
 
 def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:

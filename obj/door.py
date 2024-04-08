@@ -5,9 +5,9 @@ import tcod.ecs
 import component.graphic
 import component.physicality
 import component.verb
-from actions import ActionResult, Success
 from component.location import Location
-from game.actions import report
+from game.action import ActionResult, Success
+from game.action_logic import report
 
 
 class DoorInteractable(component.verb.Interactable):
