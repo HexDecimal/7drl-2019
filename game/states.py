@@ -65,10 +65,9 @@ class Game(State):
     def on_enter(self) -> None:
         active_zone().simulate()
 
-    def on_draw(self) -> None:
-        active_zone().render(g.console)
+    def on_draw(self, console: tcod.console.Console) -> None:
+        active_zone().render(console)
         self.draw_ui()
-        g.context.present(g.console)
 
     def draw_ui(self) -> None:
         ui_console = tcod.console.Console(20, 20, order="F")

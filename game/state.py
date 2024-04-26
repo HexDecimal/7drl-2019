@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Protocol, Union
 
 import attrs
+import tcod.console
 import tcod.event
 
 
@@ -43,7 +44,7 @@ class State(Protocol):
         """Called when a state is popped."""
         return
 
-    def on_draw(self) -> None:
+    def on_draw(self, console: tcod.console.Console) -> None:
         """Called when a state is drawn."""
         return
 
