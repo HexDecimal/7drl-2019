@@ -33,7 +33,7 @@ class DriveCoreInteractable(component.verb.Interaction):
                 return item
             return None
 
-        def perform(self, entity: tcod.ecs.Entity) -> ActionResult:
+        def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
             if not self.get_core(entity):
                 return Impossible("Need core.")
 

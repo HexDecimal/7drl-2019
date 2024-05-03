@@ -27,4 +27,8 @@ class Interaction(Interactable):
             return Impossible("No interaction.")
 
     def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
-        return self.Action(target).__call__(issuer)
+        try:
+            return self.Action(target).__call__(issuer)
+        except Exception as exc:
+            exc.add_note(f"{self.Action=}")
+            raise
