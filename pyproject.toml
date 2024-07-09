@@ -26,8 +26,10 @@ no_implicit_reexport = true
 strict_equality = true
 
 [tool.ruff]
-# https://docs.astral.sh/ruff/rules/
+line-length = 120
 exclude = ["./tqueue"]
+
+[tool.ruff.lint] # https://docs.astral.sh/ruff/rules/
 select = [
     "C90", # mccabe
     "E",   # pycodestyle
@@ -61,7 +63,6 @@ ignore = [
     "ANN101", # missing-type-self
     "ANN102", # missing-type-cls
 ]
-line-length = 120
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google" # Use Google-style docstrings
