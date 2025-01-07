@@ -453,7 +453,6 @@ class Ship:
         def icon(x: int, y: int) -> str:
             if self.rooms[x, y] == -1:
                 return " "
-            else:
-                return "%i" % (self.rooms[x, y, 0] % 10)
+            return "%i" % (self.rooms[x, y, 0] % 10)
 
         return "\n".join("".join(icon(x, y) for x in range(self.length)) for y in range(self.width))
