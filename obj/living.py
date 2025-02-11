@@ -17,7 +17,7 @@ def new_human(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             component.physicality.Physicality: component.physicality.Physicality(name="human"),
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("U")),
             component.actor.Actor: component.actor.Actor(),
-        }
+        },
     )
     return new_entity
 
@@ -31,6 +31,6 @@ def new_player(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("@")),
             component.verb.Interactable: component.verb.TakeControlInteractable(),
             component.actor.Actor: component.actor.Actor(controlled=True),
-        }
+        },
     )
     return new_entity

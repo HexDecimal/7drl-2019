@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import tcod.console
 import tcod.context
 import tcod.ecs
 
-import game.state
+if TYPE_CHECKING:
+    import game.state
 
 context: tcod.context.Context
 console: tcod.console.Console

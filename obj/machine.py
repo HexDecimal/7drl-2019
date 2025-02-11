@@ -18,7 +18,7 @@ def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             Location: location,
             component.physicality.Physicality: component.physicality.Physicality(),
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("#")),
-        }
+        },
     )
     return new_entity
 
@@ -50,6 +50,6 @@ def new_drive_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity
         {
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("╪")),
             component.verb.Interactable: DriveCoreInteractable(),
-        }
+        },
     )
     return new_entity

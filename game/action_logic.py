@@ -5,11 +5,10 @@ from __future__ import annotations
 import tcod.ecs
 
 import component.actor
-from game import action
-from game.action import Success
+from game.action import Action, Success
 
 
-def do_action(actor: tcod.ecs.Entity, action: action.Action) -> bool:
+def do_action(actor: tcod.ecs.Entity, action: Action) -> bool:
     """Attempt the action and return True if the action was performed."""
     # Ensure this actor was not already scheduled.
     assert actor.components[component.actor.Actor].ticket is None, "Actor is already waiting after an action."
@@ -19,9 +18,9 @@ def do_action(actor: tcod.ecs.Entity, action: action.Action) -> bool:
     return True
 
 
-def report(obj: tcod.ecs.Entity, string: str, **format: object) -> None:
-    FORMAT = {
+def report(obj: tcod.ecs.Entity, string: str, **fmt: object) -> None:
+    substitutions = {
         "you": "you",
         "You": "You",
     }
-    obj.registry[None].components[("log", list[str])].append(string.format(**FORMAT, **format))
+    obj.registry[None].components[("log", list[str])].append(string.format(**substitutions, **fmt))

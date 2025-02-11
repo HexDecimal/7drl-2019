@@ -14,7 +14,7 @@ def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             Location: location,
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("!"), priority=-1),
             component.item.Item: component.item.Item(),
-        }
+        },
     )
     new_entity.tags |= {"IsItem"}
     return new_entity
@@ -26,7 +26,7 @@ def new_spare_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity
         {
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("°"), priority=-1),
             component.item.Item: component.item.Item(name="spare drive core", tags=frozenset({"drive core"})),
-        }
+        },
     )
     new_entity.tags |= {"drive core"}
     return new_entity

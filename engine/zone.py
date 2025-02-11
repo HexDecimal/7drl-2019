@@ -26,7 +26,7 @@ class Zone:
     def __init__(self, shape: tuple[int, int, int]) -> None:
         self.shape = shape
 
-        self.camera = (0, 0, 0)
+        self.camera: tuple[int, int, int] = (0, 0, 0)
 
         self.data = np.empty(shape, dtype=self.DTYPE, order="F")
         self.data["tile"] = tiles.metal_wall

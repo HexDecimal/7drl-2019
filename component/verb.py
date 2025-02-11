@@ -9,7 +9,7 @@ from game.action import ActionResult, Impossible
 
 
 class Interactable:
-    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
+    def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:  # noqa: ARG002
         return Impossible("No interaction.")
 
 
@@ -23,7 +23,7 @@ class Interaction(Interactable):
     class Action(game.action.Action):
         target: tcod.ecs.Entity
 
-        def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
+        def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:  # noqa: ARG002
             return Impossible("No interaction.")
 
     def interaction(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:

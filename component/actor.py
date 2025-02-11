@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
 
 import game.actions
-import tqueue.tqueue
 from engine.helpers import active_zone
-from game.action import Action
+
+if TYPE_CHECKING:
+    import tqueue.tqueue
+    from game.action import Action
 
 
 @attrs.define(kw_only=True)
@@ -25,7 +29,7 @@ class Actor:
             active_zone().player = None
 
     @classmethod
-    def act(cls, entity: tcod.ecs.Entity) -> Action:
+    def act(cls, entity: tcod.ecs.Entity) -> Action:  # noqa: ARG003
         return game.actions.wait
 
     @classmethod
@@ -47,10 +51,10 @@ class Actor:
     @staticmethod
     def take_control(entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
-        self.interrupt(True)
+        self.interrupt(force=True)
         game.actions.PlayerControl().__call__(entity)
 
-    def interrupt(self, force: bool = False) -> None:
+    def interrupt(self, *, force: bool = False) -> None:  # noqa: ARG002
         self.ticket = None
         self.action = None
 

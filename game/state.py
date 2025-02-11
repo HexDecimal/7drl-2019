@@ -44,10 +44,10 @@ class State(Protocol):
         """Called when a state is popped."""
         return
 
-    def on_draw(self, console: tcod.console.Console) -> None:
+    def on_draw(self, console: tcod.console.Console) -> None:  # noqa: ARG002
         """Called when a state is drawn."""
         return
 
-    def on_event(self, event: tcod.event.Event) -> StateResult:
+    def on_event(self, event: tcod.event.Event) -> StateResult:  # noqa: ARG002
         """Called when a state handles an event."""
         return None

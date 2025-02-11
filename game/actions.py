@@ -9,6 +9,7 @@ import tcod.ecs
 import tcod.path
 
 import component.actor
+import component.graphic
 from component.item import Item
 from component.location import Location
 from component.physicality import Physicality
@@ -34,7 +35,7 @@ class FightPlayer:
         return Attack(active_player()).__call__(entity)
 
 
-def wait(entity: tcod.ecs.Entity) -> ActionResult:
+def wait(_entity: tcod.ecs.Entity) -> ActionResult:
     return Success()
 
 
@@ -82,7 +83,7 @@ class PlayerControl:
 
 @attrs.define()
 class Standby:
-    def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
+    def __call__(self, _entity: tcod.ecs.Entity) -> ActionResult:
         return Impossible("End of action.")
 
 

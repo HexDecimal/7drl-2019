@@ -96,7 +96,7 @@ class Game(State):
 
     def on_event(self, event: tcod.event.Event) -> StateResult:
         if isinstance(event, tcod.event.Quit):
-            raise SystemExit()
+            raise SystemExit
         if isinstance(event, tcod.event.KeyDown):
             player = get_controlled_actor()
             if event.sym in DIR_KEYS:

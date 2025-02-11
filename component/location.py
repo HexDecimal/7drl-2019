@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
+from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     import engine.zone
@@ -27,7 +28,7 @@ class Location:
             return False
         if abs(self.x - other.x) > 1:
             return False
-        if abs(self.y - other.y) > 1:
+        if abs(self.y - other.y) > 1:  # noqa: SIM103
             return False
         return True
 
@@ -36,8 +37,8 @@ class Location:
         return self.x, self.y, self.z
 
     @property
-    def data(self) -> Any:
-        return self.zone.data[self.x, self.y, self.z]
+    def data(self) -> NDArray[Any]:
+        return self.zone.data[self.x, self.y, self.z]  # type: ignore[no-any-return]
 
     def __add__(self, other: tuple[int, int, int]) -> Location:
         """Return a location relative to this one."""

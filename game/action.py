@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, TypeAlias
+from typing import TYPE_CHECKING, Protocol, TypeAlias
 
 import attrs
 import tcod.ecs
@@ -32,7 +32,9 @@ ActionResult: TypeAlias = Success | Impossible  # noqa: UP040
 class Action(Protocol):
     """Base action protocol."""
 
-    __slots__ = ()
+    if not TYPE_CHECKING:
+        __slots__ = ()
 
-    def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
+    def __call__(self, entity: tcod.ecs.Entity, /) -> ActionResult:
         """Action call parameters."""
+        ...

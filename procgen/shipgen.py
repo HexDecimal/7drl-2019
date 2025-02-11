@@ -7,7 +7,8 @@ from collections.abc import Iterator
 from typing import Any
 
 import numpy as np
-import scipy.signal  # type: ignore
+import scipy.signal  # type: ignore[import-untyped]
+import tcod.ecs
 import tcod.libtcodpy
 from numpy.typing import NDArray
 
@@ -22,11 +23,11 @@ import tiles
 from procgen.growing_tree import AbstractGrowingTree
 
 
-class ProcGenException(Exception):
+class ProcGenError(Exception):
     pass
 
 
-class NoRoom(ProcGenException):
+class NoRoomError(ProcGenError):
     pass
 
 
@@ -170,7 +171,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         if not neighbors:
             return None
         nodes, weights = zip(*self.get_neighbors(node), strict=True)
-        return self.ship.rng.choices(list(nodes), weights)[0]  # type: ignore
+        return self.ship.rng.choices(list(nodes), weights)[0]  # type: ignore[no-any-return]
 
     def get_connection(
         self,
@@ -200,8 +201,6 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
                 continue
             if self.visited[neighbor]:
                 continue
-            # if self.get_connection(node, neighbor) in self.connected:
-            #     continue
             if self.ship.rooms[node] == self.ship.rooms[neighbor]:
                 yield neighbor, 500
             yield neighbor, 1
@@ -304,19 +303,19 @@ class Ship:
         self.next_room_id = 2
         self.gen_form()
         self.gen_halls()
-        VITAL_ROOMS = [
+        vital_rooms = [
             Hangar,
             DriveCore,
             Solars,
             Nuclear,
             Bridge,
         ]
-        for room_cls in VITAL_ROOMS:
+        for room_cls in vital_rooms:
             self.add_new_room(room_cls(), 0)
         try:
             while True:
                 self.add_new_room(RoomType())
-        except NoRoom:
+        except NoRoomError:
             pass
         self.rooms[self.rooms == 0] = 1
 
@@ -342,23 +341,23 @@ class Ship:
         self.root_node = start_x, self.half_width, 0
         self.start_position = (start_x * self.room_width + 1, self.half_width * self.room_height + 1, 0)
 
-    def add_new_room(self, room: RoomType, floor: int = 0) -> None:
+    def add_new_room(self, room: RoomType, floor: int = 0) -> None:  # noqa: ARG002
         sizes = list(
             itertools.product(
                 range(room.min_size[0], room.max_size[0] + 1),
                 range(room.min_size[1], room.max_size[1] + 1),
-            )
+            ),
         )
         self.rng.shuffle(sizes)
         for size in sizes:
             try:
                 self.rooms[self.get_free_space(size, 0)] = self.next_room_id
                 break
-            except NoRoom:
+            except NoRoomError:
                 pass
         else:
             msg = f"Could not fit {room}."
-            raise NoRoom(msg)
+            raise NoRoomError(msg)
         self.room_types[self.next_room_id] = room
         self.next_room_id += 1
 
@@ -376,7 +375,7 @@ class Ship:
         valid = np.transpose((valid == 0).nonzero())
         if not valid.size:
             msg = "No space left for room."
-            raise NoRoom(msg)
+            raise NoRoomError(msg)
         x, y = self.rng.choice(valid)
         assert (self.rooms[x : x + width, y : y + height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
@@ -400,7 +399,7 @@ class Ship:
         )
         return (neighbors != 0) & free  # type: ignore[no-any-return]
 
-    def finalize(self) -> None:
+    def finalize(self) -> None:  # noqa: C901
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:
             if 0 <= cx < self.rooms.shape[0] and 0 <= cy < self.rooms.shape[1]:
                 return self.room_types[self.rooms[cx, cy, cz]]
@@ -453,6 +452,6 @@ class Ship:
         def icon(x: int, y: int) -> str:
             if self.rooms[x, y] == -1:
                 return " "
-            return "%i" % (self.rooms[x, y, 0] % 10)
+            return f"""{self.rooms[x, y, 0] % 10:i}"""
 
         return "\n".join("".join(icon(x, y) for x in range(self.length)) for y in range(self.width))

@@ -36,7 +36,7 @@ class AbstractGrowingTree(Generic[T]):
     def visit(
         self,
         node: T,
-        prev: T | None,
+        prev: T | None,  # noqa: ARG002
     ) -> None:
         """Mark a node as visited and extend the stem.
 
@@ -55,7 +55,7 @@ class AbstractGrowingTree(Generic[T]):
 
         This function should be overridden to set the behavior
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def select_neighbor(
         self,
@@ -65,4 +65,4 @@ class AbstractGrowingTree(Generic[T]):
 
         This function should be overridden to set the behavior
         """
-        raise NotImplementedError()
+        raise NotImplementedError

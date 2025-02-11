@@ -30,6 +30,6 @@ def new_auto_door(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             component.physicality.Physicality: component.physicality.Physicality(),
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("+")),
             component.verb.Interactable: DoorInteractable(),
-        }
+        },
     )
     return new_entity
