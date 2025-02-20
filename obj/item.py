@@ -3,8 +3,8 @@ from __future__ import annotations
 import tcod.ecs
 
 import component.graphic
-import component.item
 from component.location import Location
+from game.components import Name
 
 
 def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
@@ -13,7 +13,6 @@ def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
         {
             Location: location,
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("!"), priority=-1),
-            component.item.Item: component.item.Item(),
         },
     )
     new_entity.tags |= {"IsItem"}
@@ -25,8 +24,8 @@ def new_spare_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity
     new_entity.components.update(
         {
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("°"), priority=-1),
-            component.item.Item: component.item.Item(name="spare drive core", tags=frozenset({"drive core"})),
         },
     )
+    new_entity.components[Name] = "spare drive core"
     new_entity.tags |= {"drive core"}
     return new_entity

@@ -10,13 +10,13 @@ import tcod.path
 
 import component.actor
 import component.graphic
-from component.item import Item
 from component.location import Location
 from component.physicality import Physicality
 from component.verb import Interactable
 from engine.helpers import active_player, active_zone
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
+from game.components import Name
 
 
 @attrs.define()
@@ -123,7 +123,7 @@ class PickupItem:
 
         del self.target.components[Location]
         self.target.relation_tag["IsIn"] = entity
-        report(entity, "{You} pick up the {item}.", item=self.target.components[Item].name)
+        report(entity, "{You} pick up the {item}.", item=self.target.components.get(Name, "???"))
         return Success()
 
 
