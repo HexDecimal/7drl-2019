@@ -9,6 +9,7 @@ import component.verb
 from component.location import Location
 from game.action import ActionResult, Impossible, Success
 from game.action_logic import report
+from game.tags import IsIn
 
 
 def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
@@ -29,7 +30,7 @@ class DriveCoreInteractable(component.verb.Interaction):
         target: tcod.ecs.Entity
 
         def get_core(self, entity: tcod.ecs.Entity) -> tcod.ecs.Entity | None:
-            for item in entity.world.Q.all_of(tags=["drive core"], relations=[("IsIn", entity)]):
+            for item in entity.world.Q.all_of(tags=["drive core"], relations=[(IsIn, entity)]):
                 return item
             return None
 
@@ -39,7 +40,7 @@ class DriveCoreInteractable(component.verb.Interaction):
 
             core = self.get_core(entity)
             assert core
-            core.relation_tag["IsIn"] = self.target
+            core.relation_tag[IsIn] = self.target
             report(entity, "{You} install the core.")
             return Success()
 

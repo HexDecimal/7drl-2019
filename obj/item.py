@@ -5,6 +5,7 @@ import tcod.ecs
 import component.graphic
 from component.location import Location
 from game.components import Name
+from game.tags import IsItem
 
 
 def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
@@ -15,7 +16,7 @@ def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("!"), priority=-1),
         },
     )
-    new_entity.tags |= {"IsItem"}
+    new_entity.tags |= {IsItem}
     return new_entity
 
 
