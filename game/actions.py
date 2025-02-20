@@ -17,6 +17,7 @@ from engine.helpers import active_player, active_zone
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
 from game.components import Name
+from game.tags import IsIn, IsItem
 
 
 @attrs.define()
@@ -118,11 +119,11 @@ class PickupItem:
     target: tcod.ecs.Entity
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
-        if "IsItem" not in self.target.tags:
+        if IsItem not in self.target.tags:
             return Impossible("Not an item.")
 
         del self.target.components[Location]
-        self.target.relation_tag["IsIn"] = entity
+        self.target.relation_tag[IsIn] = entity
         report(entity, "{You} pick up the {item}.", item=self.target.components.get(Name, "???"))
         return Success()
 
@@ -131,7 +132,7 @@ class PickupItem:
 class PickupGeneral:
     def get_items(self, entity: tcod.ecs.Entity) -> Iterator[ActionResult]:
         loc = entity.components[Location]
-        for target in entity.world.Q.all_of(tags=[loc, "IsItem"]):
+        for target in entity.world.Q.all_of(tags=[loc, IsItem]):
             action = PickupItem(target).__call__(entity)
             if action:
                 yield action
