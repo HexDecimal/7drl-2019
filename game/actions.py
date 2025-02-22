@@ -11,13 +11,12 @@ import tcod.path
 import component.actor
 import component.graphic
 from component.location import Location
-from component.physicality import Physicality
 from component.verb import Interactable
 from engine.helpers import active_player, active_zone
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
-from game.components import Name
-from game.tags import IsIn, IsItem
+from game.components import AttackSpeed, MoveSpeed, Name
+from game.tags import IsBlocking, IsIn, IsItem
 
 
 @attrs.define()
@@ -93,16 +92,12 @@ class Attack:
     target: tcod.ecs.Entity
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
-        if Physicality not in entity.components:
-            return Impossible("")
-        if Physicality not in self.target.components:
-            return Impossible("")
         if not entity.components[Location].is_adjacent(self.target.components[Location]):
             return Impossible("")
 
         del self.target.components[component.actor.Actor]
         self.target.components[component.graphic.Graphic] = component.graphic.Graphic(ord("%"), (63, 63, 63))
-        return Success(entity.components[Physicality].attack_speed)
+        return Success(entity.components.get(AttackSpeed, 100))
 
 
 @attrs.define()
@@ -151,16 +146,16 @@ class MoveTo:
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
         if not self.location.data["tile"]["walkable"]:
             return Impossible("Blocked.")
-        for entity in actor.world.Q.all_of(tags=[self.location], components=[Physicality]):
-            if entity.components[Physicality].blocking:
+        for entity in actor.world.Q.all_of(tags=[self.location, IsBlocking]):
+            if IsBlocking in entity.tags:
                 return Impossible("Blocked.")
 
         old_xyz = actor.components[Location].xyz
         new_xyz = self.location.xyz
         actor.components[Location] = self.location
         if old_xyz[0] - new_xyz[0] and old_xyz[1] - new_xyz[1]:
-            return Success(actor.components[Physicality].move_speed * 3 // 2)
-        return Success(actor.components[Physicality].move_speed)
+            return Success(actor.components.get(MoveSpeed, 100) * 3 // 2)
+        return Success(actor.components.get(MoveSpeed, 100))
 
 
 @attrs.define()

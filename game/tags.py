@@ -7,3 +7,6 @@ IsItem: Final = "IsItem"
 
 IsIn: Final = "IsIn"
 """Entity containment relation tag."""
+
+IsBlocking: Final = "IsBlocking"
+"""Entity is physically blocking."""
