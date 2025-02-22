@@ -4,10 +4,10 @@ import tcod.ecs
 
 import component.actor
 import component.graphic
-import component.verb
 from component.location import Location
-from game.components import Name
+from game.components import Interactable, Name
 from game.tags import IsBlocking
+from game.verbs import take_control_interaction
 
 
 def new_human(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
@@ -30,7 +30,7 @@ def new_player(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
         {
             Location: location,
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("@")),
-            component.verb.Interactable: component.verb.TakeControlInteractable(),
+            Interactable: take_control_interaction,
             component.actor.Actor: component.actor.Actor(controlled=True),
         },
     )

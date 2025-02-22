@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import attrs
 import tcod.ecs
 
 import component.graphic
-import component.verb
 from component.location import Location
 from game.action import ActionResult, Impossible, Success
 from game.action_logic import report
+from game.components import Interactable
 from game.tags import IsBlocking, IsIn
 
 
@@ -23,25 +22,23 @@ def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     return new_entity
 
 
-class DriveCoreInteractable(component.verb.Interaction):
-    @attrs.define()
-    class Action:
-        target: tcod.ecs.Entity
+def _get_core(entity: tcod.ecs.Entity) -> tcod.ecs.Entity | None:
+    """Get a dive core held in an entities inventory."""
+    for item in entity.world.Q.all_of(tags=["drive core"], relations=[(IsIn, entity)]):
+        return item
+    return None
 
-        def get_core(self, entity: tcod.ecs.Entity) -> tcod.ecs.Entity | None:
-            for item in entity.world.Q.all_of(tags=["drive core"], relations=[(IsIn, entity)]):
-                return item
-            return None
 
-        def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
-            if not self.get_core(entity):
-                return Impossible("Need core.")
+def drive_core_interaction(issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> ActionResult:
+    """Interact with or install drive cores."""
+    if not _get_core(issuer):
+        return Impossible("Need core.")
 
-            core = self.get_core(entity)
-            assert core
-            core.relation_tag[IsIn] = self.target
-            report(entity, "{You} install the core.")
-            return Success()
+    core = _get_core(issuer)
+    assert core
+    core.relation_tag[IsIn] = target
+    report(issuer, "{You} install the core.")
+    return Success()
 
 
 def new_drive_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
@@ -49,7 +46,7 @@ def new_drive_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity
     new_entity.components.update(
         {
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("╪")),
-            component.verb.Interactable: DriveCoreInteractable(),
+            Interactable: drive_core_interaction,
         },
     )
     return new_entity

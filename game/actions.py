@@ -11,11 +11,10 @@ import tcod.path
 import component.actor
 import component.graphic
 from component.location import Location
-from component.verb import Interactable
 from engine.helpers import active_player, active_zone
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
-from game.components import AttackSpeed, MoveSpeed, Name
+from game.components import AttackSpeed, Interactable, MoveSpeed, Name
 from game.tags import IsBlocking, IsIn, IsItem
 
 
@@ -45,7 +44,7 @@ class Interact:
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         if Interactable in self.target.components:
-            return self.target.components[Interactable].interaction(entity, self.target)
+            return self.target.components[Interactable].__call__(entity, self.target)
         return Impossible("Not interactable.")
 
 
