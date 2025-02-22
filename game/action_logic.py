@@ -6,6 +6,7 @@ import tcod.ecs
 
 import component.actor
 from game.action import Action, Success
+from game.components import MessageLog
 
 
 def do_action(actor: tcod.ecs.Entity, action: Action) -> bool:
@@ -23,4 +24,4 @@ def report(obj: tcod.ecs.Entity, string: str, **fmt: object) -> None:
         "you": "you",
         "You": "You",
     }
-    obj.registry[None].components[("log", list[str])].append(string.format(**substitutions, **fmt))
+    obj.registry[None].components[MessageLog].append(string.format(**substitutions, **fmt))

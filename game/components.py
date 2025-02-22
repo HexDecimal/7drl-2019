@@ -7,3 +7,7 @@ Name: Final = ("Name", str)
 
 MoveSpeed: Final = ("MoveSpeed", int)
 AttackSpeed: Final = ("AttackSpeed", int)
+
+
+MessageLog: Final = ("log", list[str])
+"""Log of recorded messages."""
