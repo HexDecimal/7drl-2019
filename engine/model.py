@@ -5,11 +5,12 @@ import tcod.ecs
 import engine.zone
 import g
 import procgen.shipgen
+from game.components import MessageLog
 
 
 def init() -> None:
     g.world = tcod.ecs.World()
-    g.world[None].components[("log", list[str])] = []
+    g.world[None].components[MessageLog] = []
 
     ship = procgen.shipgen.Ship(1)
     g.world[None].components[engine.zone.Zone] = ship.zone

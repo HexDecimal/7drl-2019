@@ -11,6 +11,7 @@ import game.actions
 from component.location import Location
 from engine.helpers import active_player, active_zone, get_controlled_actor
 from game.action_logic import do_action
+from game.components import MessageLog
 from game.state import State, StateResult
 
 WAIT_KEYS = (
@@ -86,7 +87,7 @@ class Game(State):
         log_console.draw_rect(log_console.width - 1, 1, 1, log_console.height, ord("│"))
         log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
         y = log_console.height
-        for log in reversed(g.world[None].components["log", list[str]]):
+        for log in reversed(g.world[None].components[MessageLog]):
             y -= tcod.console.get_height_rect(log_console.width, log)
             if y < 0:
                 break
