@@ -3,11 +3,11 @@ from __future__ import annotations
 import tcod.ecs
 
 import component.graphic
-import component.physicality
 import component.verb
 from component.location import Location
 from game.action import ActionResult, Success
 from game.action_logic import report
+from game.tags import IsBlocking
 
 
 class DoorInteractable(component.verb.Interactable):
@@ -16,8 +16,7 @@ class DoorInteractable(component.verb.Interactable):
         issuer: tcod.ecs.Entity,
         target: tcod.ecs.Entity,
     ) -> ActionResult:
-        del target.components[component.graphic.Graphic]
-        target.components[component.physicality.Physicality].blocking = False
+        target.clear()
         report(issuer, "{You} open the door.")
         return Success()
 
@@ -27,9 +26,9 @@ def new_auto_door(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     new_entity.components.update(
         {
             Location: location,
-            component.physicality.Physicality: component.physicality.Physicality(),
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("+")),
             component.verb.Interactable: DoorInteractable(),
         },
     )
+    new_entity.tags.add(IsBlocking)
     return new_entity

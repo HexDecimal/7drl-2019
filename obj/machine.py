@@ -4,12 +4,11 @@ import attrs
 import tcod.ecs
 
 import component.graphic
-import component.physicality
 import component.verb
 from component.location import Location
 from game.action import ActionResult, Impossible, Success
 from game.action_logic import report
-from game.tags import IsIn
+from game.tags import IsBlocking, IsIn
 
 
 def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
@@ -17,10 +16,10 @@ def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     new_entity.components.update(
         {
             Location: location,
-            component.physicality.Physicality: component.physicality.Physicality(),
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("#")),
         },
     )
+    new_entity.tags.add(IsBlocking)
     return new_entity
 
 
