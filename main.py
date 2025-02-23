@@ -8,11 +8,11 @@ import tcod.context
 import tcod.ecs
 import tcod.tileset
 
-import engine.model
 import g
 import game.state
 import game.state_logic
 import game.states
+import game.world_init
 
 CONFIG: dict[str, Any] = {
     "width": 800,
@@ -27,7 +27,7 @@ g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, o
 
 def main() -> None:
     with tcod.context.new(**CONFIG) as g.context:
-        engine.model.init()
+        game.world_init.init()
         game.state_logic.handle_result(game.state.Rebase(game.states.Game()))
         game.state_logic.loop()
 
