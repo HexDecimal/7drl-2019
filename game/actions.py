@@ -11,7 +11,7 @@ import tcod.path
 import component.actor
 import component.graphic
 from component.location import Location
-from engine.helpers import active_player, active_zone
+from engine.helpers import active_player
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
 from game.components import AttackSpeed, Interactable, MoveSpeed, Name
@@ -192,8 +192,9 @@ class Follow:
         path = self.pathfinder.get_path(*my_coord, *target_coord)
         if len(path) <= 1:
             return Impossible("Destination reached.")
+        next_x, next_y = path[0]
         return MoveTo(
-            active_zone()[(*path[0], entity.components[Location].xyz[2])],
+            entity.components[Location].replace(x=next_x, y=next_y),
         ).__call__(entity)
 
 

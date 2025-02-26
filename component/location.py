@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 import attrs
 import tcod.ecs
@@ -17,6 +17,22 @@ class Location:
     x: int
     y: int
     z: int
+
+    def replace(
+        self,
+        x: int | None = None,
+        y: int | None = None,
+        z: int | None = None,
+        *,
+        zone: engine.zone.Zone | None = None,
+    ) -> Self:
+        """Return a copy with the given parameters replaced."""
+        return self.__class__(
+            zone=zone if zone is not None else self.zone,
+            x=x if x is not None else self.x,
+            y=y if y is not None else self.y,
+            z=z if z is not None else self.z,
+        )
 
     def get_relative(self, x: int, y: int, z: int = 0) -> Location:
         """Return a location relative to this one."""
