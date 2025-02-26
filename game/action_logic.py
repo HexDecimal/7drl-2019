@@ -7,12 +7,13 @@ import tcod.ecs
 import component.actor
 from game.action import Action, Success
 from game.components import MessageLog
+from tqueue.tqueue import Ticket
 
 
 def do_action(actor: tcod.ecs.Entity, action: Action) -> bool:
     """Attempt the action and return True if the action was performed."""
     # Ensure this actor was not already scheduled.
-    assert actor.components[component.actor.Actor].ticket is None, "Actor is already waiting after an action."
+    assert Ticket not in actor.components, "Actor is already waiting after an action."
     match action.__call__(actor):
         case Success(time_cost=time_cost):
             actor.components[component.actor.Actor].schedule(actor, time_cost)

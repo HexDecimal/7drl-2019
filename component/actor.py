@@ -8,23 +8,22 @@ import tcod.ecs.callbacks
 
 import game.actions
 from engine.helpers import active_zone
+from game.action import Action
+from tqueue.tqueue import Ticket
 
 if TYPE_CHECKING:
     import tqueue.tqueue
-    from game.action import Action
 
 
 @attrs.define(kw_only=True)
 class Actor:
     controlled: bool = False
-    ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity] | None = None
-    action: Action | None = None
 
     @staticmethod
     def schedule(entity: tcod.ecs.Entity, interval: int) -> None:
-        self = entity.components[Actor]
-        assert self.ticket is None
-        self.ticket = active_zone().tqueue.schedule(interval, entity)
+        """Schedule an entity at interval."""
+        assert Ticket not in entity.components
+        entity.components[Ticket] = active_zone().tqueue.schedule(interval, entity)
         if active_zone().player is entity:
             active_zone().player = None
 
@@ -35,12 +34,12 @@ class Actor:
     @classmethod
     def call(cls, ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity], entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
-        if self.ticket is ticket:
-            self.ticket = None
-            self.action = None
+        if entity.components.get(Ticket) is ticket:
+            del entity.components[Ticket]
+            entity.components.pop(Action, None)
             if not self.controlled:
-                self.action = cls.act(entity)
-                if not self.action.__call__(entity):
+                entity.components[Action] = cls.act(entity)
+                if not entity.components[Action].__call__(entity):
                     self.schedule(entity, 100)
             else:
                 game.actions.PlayerControl().__call__(entity)
@@ -51,12 +50,13 @@ class Actor:
     @staticmethod
     def take_control(entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
-        self.interrupt(force=True)
+        self.interrupt(entity, force=True)
         game.actions.PlayerControl().__call__(entity)
 
-    def interrupt(self, *, force: bool = False) -> None:  # noqa: ARG002
-        self.ticket = None
-        self.action = None
+    @staticmethod
+    def interrupt(entity: tcod.ecs.Entity, *, force: bool = False) -> None:  # noqa: ARG004
+        entity.components.pop(Ticket, None)
+        entity.components.pop(Action, None)
 
 
 @tcod.ecs.callbacks.register_component_changed(component=Actor)
@@ -65,6 +65,6 @@ def on_actor_changed(entity: tcod.ecs.Entity, old: Actor | None, new: Actor | No
     if old == new:
         return
     if old is not None:
-        entity.components[Actor].ticket = None
+        entity.components.pop(Ticket, None)
     if new is not None:
         Actor.schedule(entity, 0)

@@ -8,10 +8,11 @@ import tcod.ecs
 
 import component.actor
 import component.location
+import engine.helpers
 import g
 import tiles
 from component.graphic import Graphic
-from engine.helpers import active_player
+from game.action import Action
 from tqueue import tqueue
 
 if TYPE_CHECKING:
@@ -41,10 +42,10 @@ class Zone:
         while not self.player:
             ticket = self.tqueue.pop()
             component.actor.Actor.call(ticket, ticket.value)
-            if component.actor.Actor not in active_player().components:
+            if component.actor.Actor not in engine.helpers.active_player().components:
                 msg = "Player has died."
                 raise SystemExit(msg)
-        self.player.components[component.actor.Actor].action = None  # Clear PlayerControl action.
+        self.player.components.pop(Action, None)  # Clear PlayerControl action.
 
     def render(self, console: tcod.console.Console) -> None:
         console.clear()
