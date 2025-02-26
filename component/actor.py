@@ -7,13 +7,12 @@ import tcod.ecs.callbacks
 import game.actions
 from engine.helpers import active_zone
 from game.action import Action
+from game.tags import IsControllable
 from game.typing import Ticket_, TurnQueue_
 
 
 @attrs.define(kw_only=True)
 class Actor:
-    controlled: bool = False
-
     @staticmethod
     def schedule(entity: tcod.ecs.Entity, interval: int) -> None:
         """Schedule an entity at interval."""
@@ -32,15 +31,12 @@ class Actor:
         if entity.components.get(Ticket_) is ticket:
             del entity.components[Ticket_]
             entity.components.pop(Action, None)
-            if not self.controlled:
+            if IsControllable not in entity.tags:
                 entity.components[Action] = cls.act(entity)
                 if not entity.components[Action].__call__(entity):
                     self.schedule(entity, 100)
             else:
                 game.actions.PlayerControl().__call__(entity)
-
-    def is_controlled(self) -> bool:
-        return self.controlled
 
     @staticmethod
     def take_control(entity: tcod.ecs.Entity) -> None:

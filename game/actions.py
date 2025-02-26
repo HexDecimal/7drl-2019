@@ -15,7 +15,7 @@ from engine.helpers import active_player, active_zone
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
 from game.components import AttackSpeed, Interactable, MoveSpeed, Name
-from game.tags import IsBlocking, IsIn, IsItem
+from game.tags import IsBlocking, IsControllable, IsIn, IsItem
 
 
 @attrs.define()
@@ -74,7 +74,7 @@ class PlayerControl:
     """Give immediate user control to this entity."""
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
-        entity.components[component.actor.Actor].controlled = True
+        entity.tags.add(IsControllable)
         entity.components[Location].zone.camera = entity.components[Location].xyz
         entity.components[Location].zone.player = entity
         return Impossible("End of action.")  # Further actions will be pending.
@@ -203,7 +203,7 @@ class ReturnControlToPlayer:
         player = active_player()
         if entity is player:
             return Impossible("Already player.")
-        entity.components[component.actor.Actor].controlled = False
+        entity.tags.discard(IsControllable)
         component.actor.Actor.take_control(player)
         report(entity, "{You} stop controlling the robot.")
         return Success(time_cost=0)
@@ -216,7 +216,7 @@ class RemoteControl:
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         if self.target is active_player():
             return ReturnControlToPlayer().__call__(entity)
-        entity.components[component.actor.Actor].controlled = False
+        entity.tags.discard(IsControllable)
         component.actor.Actor.take_control(self.target)
         report(entity, "{You} begin controlling the robot remotely.")
         return Success(time_cost=0)

@@ -6,7 +6,7 @@ import component.actor
 import component.graphic
 from component.location import Location
 from game.components import Interactable, Name
-from game.tags import IsBlocking
+from game.tags import IsBlocking, IsControllable
 from game.verbs import take_control_interaction
 
 
@@ -31,9 +31,10 @@ def new_player(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
             Location: location,
             component.graphic.Graphic: component.graphic.Graphic(ch=ord("@")),
             Interactable: take_control_interaction,
-            component.actor.Actor: component.actor.Actor(controlled=True),
+            component.actor.Actor: component.actor.Actor(),
         },
     )
     new_entity.components[Name] = "you"
     new_entity.tags.add(IsBlocking)
+    new_entity.tags.add(IsControllable)
     return new_entity

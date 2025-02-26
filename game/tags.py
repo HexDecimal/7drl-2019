@@ -10,3 +10,9 @@ IsIn: Final = "IsIn"
 
 IsBlocking: Final = "IsBlocking"
 """Entity is physically blocking."""
+
+IsControllable: Final = "IsControllable"
+"""Entity is player controlled on its turn."""
+
+IsActive: Final = "IsActive"
+"""Entity is active."""
