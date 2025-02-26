@@ -14,5 +14,8 @@ IsBlocking: Final = "IsBlocking"
 IsControllable: Final = "IsControllable"
 """Entity is player controlled on its turn."""
 
+IsControlled: Final = "IsControlled"
+"""Entity is currently being controlled."""
+
 IsActive: Final = "IsActive"
 """Entity is active."""

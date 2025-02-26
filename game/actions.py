@@ -15,7 +15,7 @@ from engine.helpers import active_player
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
 from game.components import AttackSpeed, Interactable, MoveSpeed, Name
-from game.tags import IsBlocking, IsControllable, IsIn, IsItem
+from game.tags import IsBlocking, IsControllable, IsControlled, IsIn, IsItem
 
 
 @attrs.define()
@@ -75,8 +75,8 @@ class PlayerControl:
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         entity.tags.add(IsControllable)
+        entity.tags.add(IsControlled)
         entity.components[Location].zone.camera = entity.components[Location].xyz
-        entity.components[Location].zone.player = entity
         return Impossible("End of action.")  # Further actions will be pending.
 
 

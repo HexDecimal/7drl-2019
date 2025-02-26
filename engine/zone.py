@@ -13,6 +13,7 @@ import g
 import tiles
 from component.graphic import Graphic
 from game.action import Action
+from game.tags import IsControlled
 from game.typing import TurnQueue_
 
 if TYPE_CHECKING:
@@ -35,16 +36,15 @@ class Zone:
 
         self.locations = {}
 
-        self.player: tcod.ecs.Entity | None = None
-
     def simulate(self) -> None:
-        while not self.player:
+        while not g.world.Q.all_of(tags=[IsControlled]):
             ticket = g.world[None].components[TurnQueue_].pop()
             component.actor.Actor.call(ticket, ticket.value)
             if component.actor.Actor not in engine.helpers.active_player().components:
                 msg = "Player has died."
                 raise SystemExit(msg)
-        self.player.components.pop(Action, None)  # Clear PlayerControl action.
+        for entity in g.world.Q.all_of(tags=[IsControlled]):
+            entity.components.pop(Action, None)  # Clear PlayerControl action.
 
     def render(self, console: tcod.console.Console) -> None:
         console.clear()

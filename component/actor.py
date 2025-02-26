@@ -5,9 +5,8 @@ import tcod.ecs
 import tcod.ecs.callbacks
 
 import game.actions
-from engine.helpers import active_zone
 from game.action import Action
-from game.tags import IsControllable
+from game.tags import IsControllable, IsControlled
 from game.typing import Ticket_, TurnQueue_
 
 
@@ -18,8 +17,7 @@ class Actor:
         """Schedule an entity at interval."""
         assert Ticket_ not in entity.components
         entity.components[Ticket_] = entity.registry[None].components[TurnQueue_].schedule(interval, entity)
-        if active_zone().player is entity:
-            active_zone().player = None
+        entity.tags.discard(IsControlled)
 
     @classmethod
     def act(cls, entity: tcod.ecs.Entity) -> Action:  # noqa: ARG003
