@@ -13,6 +13,7 @@ from engine.helpers import active_player, active_zone, get_controlled_actor
 from game.action_logic import do_action
 from game.components import MessageLog
 from game.state import State, StateResult
+from game.typing import TurnQueue_
 
 WAIT_KEYS = (
     tcod.event.KeySym.COMMA,
@@ -75,7 +76,7 @@ class Game(State):
         ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
         ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ord("─"))
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ord("└"))
-        ui_console.print(1, 0, f"Time: {active_zone().tqueue.time}")
+        ui_console.print(1, 0, f"Time: {g.world[None].components[TurnQueue_].time}")
         ui_console.print(1, 1, f"Pos: {active_player().components[Location].xyz}")
         room_name = active_zone().room_types[active_zone().data["room_id"][active_player().components[Location].xyz]]
         ui_console.print(1, 2, f"{room_name}")

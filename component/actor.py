@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
@@ -9,10 +7,7 @@ import tcod.ecs.callbacks
 import game.actions
 from engine.helpers import active_zone
 from game.action import Action
-from tqueue.tqueue import Ticket
-
-if TYPE_CHECKING:
-    import tqueue.tqueue
+from game.typing import Ticket_, TurnQueue_
 
 
 @attrs.define(kw_only=True)
@@ -22,8 +17,8 @@ class Actor:
     @staticmethod
     def schedule(entity: tcod.ecs.Entity, interval: int) -> None:
         """Schedule an entity at interval."""
-        assert Ticket not in entity.components
-        entity.components[Ticket] = active_zone().tqueue.schedule(interval, entity)
+        assert Ticket_ not in entity.components
+        entity.components[Ticket_] = entity.registry[None].components[TurnQueue_].schedule(interval, entity)
         if active_zone().player is entity:
             active_zone().player = None
 
@@ -32,10 +27,10 @@ class Actor:
         return game.actions.wait
 
     @classmethod
-    def call(cls, ticket: tqueue.tqueue.Ticket[tcod.ecs.Entity], entity: tcod.ecs.Entity) -> None:
+    def call(cls, ticket: Ticket_, entity: tcod.ecs.Entity) -> None:
         self = entity.components[Actor]
-        if entity.components.get(Ticket) is ticket:
-            del entity.components[Ticket]
+        if entity.components.get(Ticket_) is ticket:
+            del entity.components[Ticket_]
             entity.components.pop(Action, None)
             if not self.controlled:
                 entity.components[Action] = cls.act(entity)
@@ -55,7 +50,7 @@ class Actor:
 
     @staticmethod
     def interrupt(entity: tcod.ecs.Entity, *, force: bool = False) -> None:  # noqa: ARG004
-        entity.components.pop(Ticket, None)
+        entity.components.pop(Ticket_, None)
         entity.components.pop(Action, None)
 
 
@@ -65,6 +60,6 @@ def on_actor_changed(entity: tcod.ecs.Entity, old: Actor | None, new: Actor | No
     if old == new:
         return
     if old is not None:
-        entity.components.pop(Ticket, None)
+        entity.components.pop(Ticket_, None)
     if new is not None:
         Actor.schedule(entity, 0)

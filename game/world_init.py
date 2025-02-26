@@ -6,11 +6,13 @@ import engine.zone
 import g
 import procgen.shipgen
 from game.components import MessageLog
+from game.typing import TurnQueue_
 
 
 def init() -> None:
     g.world = tcod.ecs.World()
     g.world[None].components[MessageLog] = []
+    g.world[None].components[TurnQueue_] = TurnQueue_()
 
     ship = procgen.shipgen.Ship(1)
     g.world[None].components[engine.zone.Zone] = ship.zone
