@@ -13,10 +13,12 @@ if TYPE_CHECKING:
 
 @attrs.define(frozen=True)
 class Location:
-    zone: engine.zone.Zone
+    """A tile location within a specific zone."""
+
     x: int
     y: int
     z: int
+    zone: engine.zone.Zone
 
     def replace(
         self,
@@ -34,10 +36,6 @@ class Location:
             z=z if z is not None else self.z,
         )
 
-    def get_relative(self, x: int, y: int, z: int = 0) -> Location:
-        """Return a location relative to this one."""
-        return Location(self.zone, self.x + x, self.y + y, self.z + z)
-
     def is_adjacent(self, other: Location) -> bool:
         """Return True if this location is at most one tile away from `other`."""
         if self.z != other.z:
@@ -50,6 +48,7 @@ class Location:
 
     @property
     def xyz(self) -> tuple[int, int, int]:
+        """Return the coordinates of this location."""
         return self.x, self.y, self.z
 
     @property
@@ -59,11 +58,12 @@ class Location:
     def __add__(self, other: tuple[int, int, int]) -> Location:
         """Return a location relative to this one."""
         x, y, z = other
-        return self.__class__(self.zone, self.x + x, self.y + y, self.z + z)
+        return self.__class__(self.x + x, self.y + y, self.z + z, self.zone)
 
 
 @tcod.ecs.callbacks.register_component_changed(component=Location)
 def on_location_changed(entity: tcod.ecs.Entity, old: Location | None, new: Location | None) -> None:
+    """Track location changes."""
     if old == new:
         return
     if old is not None:

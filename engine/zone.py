@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 class Zone:
     DTYPE: Final = [("tile", tiles.DTYPE), ("room_id", np.int16)]
-    locations: dict[tuple[int, int, int], component.location.Location]
     room_types: dict[int, procgen.shipgen.RoomType]
 
     def __init__(self, shape: tuple[int, int, int]) -> None:
@@ -33,8 +32,6 @@ class Zone:
         self.data = np.empty(shape, dtype=self.DTYPE, order="F")
         self.data["tile"] = tiles.metal_wall
         self.data["tile"][1:-1, 1:-1, :] = tiles.metal_floor
-
-        self.locations = {}
 
     def simulate(self) -> None:
         while not g.world.Q.all_of(tags=[IsControlled]):
@@ -77,9 +74,7 @@ class Zone:
         xyz: tuple[int, int, int],
     ) -> component.location.Location:
         """Return a location, creating a new one if it doesn't exist."""
-        if xyz not in self.locations:
-            self.locations[xyz] = component.location.Location(self, *xyz)
-        return self.locations[xyz]
+        return component.location.Location(*xyz, zone=self)
 
     @property
     def width(self) -> int:
