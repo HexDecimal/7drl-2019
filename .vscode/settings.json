@@ -17,6 +17,7 @@
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "cSpell.words": [
+        "argwhere",
         "astype",
         "autoupdate",
         "blit",

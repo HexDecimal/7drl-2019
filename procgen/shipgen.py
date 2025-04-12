@@ -4,7 +4,6 @@ import itertools
 import random
 import sys
 from collections.abc import Iterator
-from typing import Any
 
 import numpy as np
 import scipy.signal  # type: ignore[import-untyped]
@@ -24,11 +23,18 @@ from procgen.growing_tree import AbstractGrowingTree
 
 
 class ProcGenError(Exception):
-    pass
+    """Generation has reached a bad state."""
 
 
 class NoRoomError(ProcGenError):
-    pass
+    """A required room can not be placed or found."""
+
+
+def get_area(room_id: int, ship: Ship) -> NDArray[np.bool_]:
+    """Return the available floor of a room."""
+    area: NDArray[np.bool_] = ship.zone.data["room_id"] == room_id
+    area &= ship.zone.data["tile"]["walkable"] != 0
+    return area
 
 
 class RoomType:
@@ -45,13 +51,8 @@ class RoomType:
     def __str__(self) -> str:
         return self.name
 
-    def get_area(self, room_id: int, ship: Ship) -> NDArray[np.bool_]:
-        area: NDArray[np.bool_] = ship.zone.data["room_id"] == room_id
-        area &= ship.zone.data["tile"]["walkable"] != 0
-        return area
-
     def finalize(self, room_id: int, ship: Ship) -> None:
-        for xyz in ship.np_sample(self.get_area(room_id, ship), 1):
+        for xyz in ship.np_sample(get_area(room_id, ship), 1):
             obj.item.new_item(g.world, ship.zone[xyz])
 
 
@@ -83,7 +84,7 @@ class Hangar(RoomType):
     max_size = (8, 4)
 
     def finalize(self, room_id: int, ship: Ship) -> None:
-        pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
+        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
         ship.player = obj.living.new_player(g.world, ship.zone[pos1])
         obj.robot.new_robot(g.world, ship.zone[pos2])
 
@@ -102,7 +103,7 @@ class DriveCore(BasePowerRoom):
     max_size = (4, 4)
 
     def finalize(self, room_id: int, ship: Ship) -> None:
-        pos1, pos2 = ship.np_sample(self.get_area(room_id, ship), 2)
+        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
         obj.machine.new_drive_core(g.world, ship.zone[pos1])
         obj.item.new_spare_core(g.world, ship.zone[pos2])
 
@@ -280,10 +281,12 @@ class Ship:
         self.rng = random.Random(seed)
         self.generate()
 
-    def np_sample(self, array: NDArray[Any], k: int) -> list[tuple[Any, ...]]:
+    def np_sample(self, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
         if not np.any(array):
-            return []
-        return self.rng.sample(list(zip(*array.nonzero(), strict=False)), k)
+            return []  # This should be removed, will silently ignore bad data
+        assert len(array.shape) == 3  # noqa: PLR2004
+        where: list[list[int]] = np.argwhere(array).tolist()  # type: ignore[assignment]
+        return [(x, y, z) for x, y, z in self.rng.sample(where, k)]
 
     def generate(self) -> None:
         self.length = 64
