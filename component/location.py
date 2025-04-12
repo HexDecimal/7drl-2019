@@ -15,9 +15,9 @@ if TYPE_CHECKING:
 class Location:
     """A tile location within a specific zone."""
 
-    x: int
-    y: int
-    z: int
+    x: int = attrs.field(converter=int)
+    y: int = attrs.field(converter=int)
+    z: int = attrs.field(converter=int)
     zone: engine.zone.Zone
 
     def replace(
