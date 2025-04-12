@@ -1,3 +1,5 @@
+"""Tile data module."""
+
 from __future__ import annotations
 
 from typing import NamedTuple
@@ -12,6 +14,8 @@ DTYPE = [
 
 
 class Tile(NamedTuple):
+    """Tile data structure."""
+
     ch: int = ord("?")
     fg: tuple[int, int, int] = (255, 255, 255)
     bg: tuple[int, int, int] = (0, 0, 0)

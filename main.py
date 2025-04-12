@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Main script."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -26,6 +28,7 @@ g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, o
 
 
 def main() -> None:
+    """Main entry function."""
     with tcod.context.new(**CONFIG) as g.context:
         game.world_init.init()
         game.state_logic.handle_result(game.state.Rebase(game.states.Game()))
