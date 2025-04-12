@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING
 import tcod.ecs
 
 import component.actor
-import component.graphic
 import game.actions
 from component.location import Location
-from game.components import Interactable, Name
+from game.components import Graphic, Interactable, Name
 from game.tags import IsBlocking
 from game.verbs import take_control_interaction
 
@@ -27,7 +26,7 @@ def new_robot(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     new_entity.components.update(
         {
             Location: location,
-            component.graphic.Graphic: component.graphic.Graphic(ch=ord("R")),
+            Graphic: Graphic(ch=ord("R")),
             Interactable: take_control_interaction,
             component.actor.Actor: RobotActor(),
         },

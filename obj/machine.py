@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import tcod.ecs
 
-import component.graphic
 from component.location import Location
 from game.action import ActionResult, Impossible, Success
 from game.action_logic import report
-from game.components import Interactable
+from game.components import Graphic, Interactable
 from game.tags import IsBlocking, IsIn
 
 
@@ -15,7 +14,7 @@ def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     new_entity.components.update(
         {
             Location: location,
-            component.graphic.Graphic: component.graphic.Graphic(ch=ord("#")),
+            Graphic: Graphic(ch=ord("#")),
         },
     )
     new_entity.tags.add(IsBlocking)
@@ -45,7 +44,7 @@ def new_drive_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity
     new_entity = new_machine(world, location)
     new_entity.components.update(
         {
-            component.graphic.Graphic: component.graphic.Graphic(ch=ord("╪")),
+            Graphic: Graphic(ch=ord("╪")),
             Interactable: drive_core_interaction,
         },
     )

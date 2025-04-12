@@ -9,12 +9,11 @@ import tcod.ecs
 import tcod.path
 
 import component.actor
-import component.graphic
 from component.location import Location
 from engine.helpers import active_player
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
-from game.components import AttackSpeed, Interactable, MoveSpeed, Name
+from game.components import AttackSpeed, Graphic, Interactable, MoveSpeed, Name
 from game.tags import IsBlocking, IsControllable, IsControlled, IsIn, IsItem
 
 
@@ -95,7 +94,7 @@ class Attack:
             return Impossible("")
 
         del self.target.components[component.actor.Actor]
-        self.target.components[component.graphic.Graphic] = component.graphic.Graphic(ord("%"), (63, 63, 63))
+        self.target.components[Graphic] = Graphic(ord("%"), (63, 63, 63))
         return Success(entity.components.get(AttackSpeed, 100))
 
 

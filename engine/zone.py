@@ -11,8 +11,8 @@ import component.location
 import engine.helpers
 import g
 import tiles
-from component.graphic import Graphic
 from game.action import Action
+from game.components import Graphic
 from game.tags import IsControlled
 from game.typing import TurnQueue_
 

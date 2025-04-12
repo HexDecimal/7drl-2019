@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Protocol
 
+import attrs
 import tcod.ecs
 
 if TYPE_CHECKING:
@@ -26,3 +27,15 @@ class Interactable(Protocol):
     def __call__(self, issuer: tcod.ecs.Entity, target: tcod.ecs.Entity, /) -> ActionResult:
         """Called when the player/issuer bumps into target."""
         ...
+
+
+@attrs.define(frozen=True)
+class Graphic:
+    """Entity glyph graphic."""
+
+    ch: int = ord("!")
+    fg: tuple[int, int, int] = (255, 255, 255)
+    priority: int = 0
+
+    def get(self) -> tuple[int, tuple[int, int, int]]:
+        return self.ch, self.fg
