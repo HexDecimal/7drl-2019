@@ -73,9 +73,9 @@ class Game(State):
 
     def draw_ui(self) -> None:
         ui_console = tcod.console.Console(20, 20, order="F")
-        ui_console.draw_rect(0, 0, 1, ui_console.height, ord("│"))
-        ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ord("─"))
-        ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ord("└"))
+        ui_console.draw_rect(0, 0, 1, ui_console.height, ch=ord("│"))
+        ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ch=ord("─"))
+        ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ch=ord("└"))
         ui_console.print(1, 0, f"Time: {g.world[None].components[TurnQueue_].time}")
         ui_console.print(1, 1, f"Pos: {active_player().components[Location].xyz}")
         room_name = active_zone().room_types[active_zone().data["room_id"][active_player().components[Location].xyz]]
@@ -84,15 +84,15 @@ class Game(State):
         ui_console.blit(g.console, g.console.width - ui_console.width, 0, bg_alpha=0.9)
 
         log_console = tcod.console.Console(80, 10, order="F")
-        log_console.draw_rect(0, 0, log_console.width, 1, ord("─"))
-        log_console.draw_rect(log_console.width - 1, 1, 1, log_console.height, ord("│"))
-        log_console.draw_rect(log_console.width - 1, 0, 1, 1, ord("┐"))
+        log_console.draw_rect(0, 0, log_console.width, 1, ch=ord("─"))
+        log_console.draw_rect(log_console.width - 1, 1, 1, log_console.height, ch=ord("│"))
+        log_console.draw_rect(log_console.width - 1, 0, 1, 1, ch=ord("┐"))
         y = log_console.height
         for log in reversed(g.world[None].components[MessageLog]):
             y -= tcod.console.get_height_rect(log_console.width, log)
             if y < 0:
                 break
-            log_console.print_box(0, y, 0, 0, log)
+            log_console.print(x=0, y=y, width=log_console.width, text=log)
 
         log_console.blit(g.console, 0, g.console.height - log_console.height, bg_alpha=0.9)
 
