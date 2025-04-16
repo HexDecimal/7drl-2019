@@ -20,7 +20,7 @@ CONFIG: dict[str, Any] = {
     "width": 800,
     "height": 500,
     "title": None,
-    "tileset": tcod.tileset.load_tilesheet("terminal8x12_gs_ro.png", 16, 16, tcod.tileset.CHARMAP_CP437),
+    "tileset": tcod.tileset.load_tilesheet("assets/terminal8x12_gs_ro.png", 16, 16, tcod.tileset.CHARMAP_CP437),
     "vsync": True,
 }
 
