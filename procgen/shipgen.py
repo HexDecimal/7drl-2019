@@ -51,7 +51,20 @@ class RoomType:
     def __str__(self) -> str:
         return self.name
 
-    def finalize(self, room_id: int, ship: Ship) -> None:
+
+def finalize_room(room: RoomType, room_id: int, ship: Ship) -> None:
+    """Place items/furniture in room."""
+    if room.name == "Space":
+        pass
+    elif room.name == "Drive Core":
+        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
+        obj.machine.new_drive_core(g.world, ship.zone[pos1])
+        obj.item.new_spare_core(g.world, ship.zone[pos2])
+    elif room.name == "Hangar":
+        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
+        ship.player = obj.living.new_player(g.world, ship.zone[pos1])
+        obj.robot.new_robot(g.world, ship.zone[pos2])
+    else:
         for xyz in ship.np_sample(get_area(room_id, ship), 1):
             obj.item.new_item(g.world, ship.zone[xyz])
 
@@ -71,9 +84,6 @@ class Space(RoomType):
     wall = tiles.hull
     min_size = (1, 1)
 
-    def finalize(self, room_id: int, ship: Ship) -> None:
-        pass
-
 
 class Hangar(RoomType):
     priority = 1
@@ -82,11 +92,6 @@ class Hangar(RoomType):
     wall = tiles.reinforced_wall
     min_size = (8, 4)
     max_size = (8, 4)
-
-    def finalize(self, room_id: int, ship: Ship) -> None:
-        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
-        ship.player = obj.living.new_player(g.world, ship.zone[pos1])
-        obj.robot.new_robot(g.world, ship.zone[pos2])
 
 
 class BasePowerRoom(RoomType):
@@ -101,11 +106,6 @@ class DriveCore(BasePowerRoom):
     wall = tiles.reinforced_wall
     min_size = (3, 3)
     max_size = (4, 4)
-
-    def finalize(self, room_id: int, ship: Ship) -> None:
-        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
-        obj.machine.new_drive_core(g.world, ship.zone[pos1])
-        obj.item.new_spare_core(g.world, ship.zone[pos2])
 
 
 class Solars(BasePowerRoom):
@@ -449,7 +449,7 @@ class Ship:
         ShipRoomConnector(self).generate()
 
         for room_id, room in self.room_types.items():
-            room.finalize(room_id, self)
+            finalize_room(room, room_id, self)
 
     def show(self) -> str:
         def icon(x: int, y: int) -> str:
