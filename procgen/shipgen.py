@@ -5,6 +5,7 @@ import random
 import sys
 from collections.abc import Iterator
 
+import attrs
 import numpy as np
 import scipy.signal  # type: ignore[import-untyped]
 import tcod.ecs
@@ -37,7 +38,10 @@ def get_area(room_id: int, ship: Ship) -> NDArray[np.bool_]:
     return area
 
 
+@attrs.define(frozen=True, order=True)
 class RoomType:
+    """Room type info, for generating a room."""
+
     priority: float = 0
     name: str = "<room>"
     floor: tiles.Tile = tiles.metal_floor
@@ -45,10 +49,8 @@ class RoomType:
     min_size: tuple[int, int] = (2, 2)
     max_size: tuple[int, int] = (4, 4)
 
-    def __lt__(self, other: RoomType) -> bool:
-        return self.priority < other.priority
-
     def __str__(self) -> str:
+        """Return the name of this room for the player."""
         return self.name
 
 
@@ -69,60 +71,65 @@ def finalize_room(room: RoomType, room_id: int, ship: Ship) -> None:
             obj.item.new_item(g.world, ship.zone[xyz])
 
 
-class Corridor(RoomType):
-    priority = -1
-    name = "Corridor"
-    floor = tiles.metal_floor._replace(bg=(0x30, 0x30, 0x20))
-    wall = tiles.metal_wall
-    min_size = (1, 1)
+r_undefined = RoomType()
 
+r_corridor = RoomType(
+    priority=-1,
+    name="Corridor",
+    floor=tiles.metal_floor._replace(bg=(0x30, 0x30, 0x20)),
+    wall=tiles.metal_wall,
+    min_size=(1, 1),
+)
+r_space = RoomType(
+    priority=100,
+    name="Space",
+    floor=tiles.space,
+    wall=tiles.hull,
+    min_size=(1, 1),
+)
 
-class Space(RoomType):
-    priority = 100
-    name = "Space"
-    floor = tiles.space
-    wall = tiles.hull
-    min_size = (1, 1)
+r_hangar = RoomType(
+    priority=1,
+    name="Hangar",
+    floor=tiles.metal_floor._replace(bg=(0x00, 0x00, 0x20)),
+    wall=tiles.reinforced_wall,
+    min_size=(8, 4),
+    max_size=(8, 4),
+)
 
+base_power_room = RoomType(
+    floor=r_undefined.floor._replace(bg=(0x30, 0x30, 0x00)),
+    min_size=(2, 2),
+    max_size=(3, 3),
+)
 
-class Hangar(RoomType):
-    priority = 1
-    name = "Hangar"
-    floor = tiles.metal_floor._replace(bg=(0x00, 0x00, 0x20))
-    wall = tiles.reinforced_wall
-    min_size = (8, 4)
-    max_size = (8, 4)
+r_drive_core = attrs.evolve(
+    base_power_room,
+    priority=1,
+    name="Drive Core",
+    wall=tiles.reinforced_wall,
+    min_size=(3, 3),
+    max_size=(4, 4),
+)
 
+r_solars = attrs.evolve(
+    base_power_room,
+    name="Solars",
+)
 
-class BasePowerRoom(RoomType):
-    floor = RoomType.floor._replace(bg=(0x30, 0x30, 0x00))
-    min_size = (2, 2)
-    max_size = (3, 3)
+r_nuclear = attrs.evolve(
+    base_power_room,
+    priority=1,
+    name="Nuclear",
+    wall=tiles.reinforced_wall,
+)
 
-
-class DriveCore(BasePowerRoom):
-    priority = 1
-    name = "Drive Core"
-    wall = tiles.reinforced_wall
-    min_size = (3, 3)
-    max_size = (4, 4)
-
-
-class Solars(BasePowerRoom):
-    name = "Solars"
-
-
-class Nuclear(BasePowerRoom):
-    priority = 1
-    name = "Nuclear"
-    wall = tiles.reinforced_wall
-
-
-class Bridge(RoomType):
-    name = "Bridge"
-    floor = RoomType.floor._replace(bg=(0x30, 0x30, 0x30))
-    min_size = (2, 2)
-    max_size = (4, 4)
+r_bridge = RoomType(
+    name="Bridge",
+    floor=r_undefined.floor._replace(bg=(0x30, 0x30, 0x30)),
+    min_size=(2, 2),
+    max_size=(4, 4),
+)
 
 
 class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
@@ -299,22 +306,22 @@ class Ship:
         self.form = np.zeros((self.depth, self.length), dtype=int)
         self.rooms = np.zeros((self.length, self.width, self.depth), dtype=int, order="F")
         self.room_types = {
-            -1: Space(),
-            0: RoomType(),
-            1: Corridor(),
+            -1: r_space,
+            0: r_undefined,
+            1: r_corridor,
         }
         self.next_room_id = 2
         self.gen_form()
         self.gen_halls()
-        vital_rooms = [
-            Hangar,
-            DriveCore,
-            Solars,
-            Nuclear,
-            Bridge,
-        ]
-        for room_cls in vital_rooms:
-            self.add_new_room(room_cls(), 0)
+        vital_rooms = (
+            r_hangar,
+            r_drive_core,
+            r_solars,
+            r_nuclear,
+            r_bridge,
+        )
+        for room_type in vital_rooms:
+            self.add_new_room(room_type, 0)
         try:
             while True:
                 self.add_new_room(RoomType())

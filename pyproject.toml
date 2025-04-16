@@ -32,6 +32,7 @@ exclude = ["./tqueue"]
 [tool.ruff.lint] # https://docs.astral.sh/ruff/rules/
 select = ["ALL"]
 ignore = [
+    "COM",   # commas handled by formatter
     "E501",  # line-too-long
     "S101",  # assert
     "T20",   # flake8-print
