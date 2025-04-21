@@ -381,18 +381,18 @@ class Ship:
             room_area,
             "full",
         )[width - 1 : -width + 1, height - 1 : -height + 1]
-        valid = np.transpose((valid == 0).nonzero())
-        if not valid.size:
+        valid_where = np.argwhere(valid == 0)
+        if not valid_where.size:
             msg = "No space left for room."
             raise NoRoomError(msg)
-        x, y = self.rng.choice(valid)
+        x, y = self.rng.choice(valid_where)
         assert (self.rooms[x : x + width, y : y + height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
 
     def get_unclaimed_cell(self) -> tuple[int, int]:
-        nz = self.get_unclaimed_cells().nonzero()
-        i = self.rng.randint(0, len(nz[0]) - 1)
-        return nz[0][i], nz[1][i]
+        where = np.argwhere(self.get_unclaimed_cells())
+        i = self.rng.randint(0, len(where) - 1)
+        return int(where[i][0]), int(where[i][1])
 
     def get_unclaimed_cells(self) -> NDArray[np.bool_]:
         claimed = self.rooms > 0
