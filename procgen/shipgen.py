@@ -375,9 +375,8 @@ class Ship:
         """Return the slice indexes of a an unclaimed area."""
         width, height = size
         room_area = np.ones((width, height), dtype=bool)
-        #  Convolve room_area into self.rooms, values of zero mean this room
-        #  will fit.
-        valid = scipy.signal.convolve(
+        # Convolve room_area into self.rooms, values of zero mean this room will fit.
+        valid = scipy.signal.convolve2d(
             (self.rooms[..., floor] != 0).astype(int),
             room_area,
             "full",
@@ -398,7 +397,7 @@ class Ship:
     def get_unclaimed_cells(self) -> NDArray[np.bool_]:
         claimed = self.rooms > 0
         free = self.rooms == 0
-        neighbors = scipy.signal.convolve(
+        neighbors = scipy.signal.convolve2d(
             in1=claimed,
             in2=[
                 [0, 1, 0],
