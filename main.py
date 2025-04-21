@@ -31,7 +31,7 @@ def main() -> None:
     """Main entry function."""
     with tcod.context.new(**CONFIG) as g.context:
         game.world_init.init()
-        game.state_logic.handle_result(game.state.Rebase(game.states.Game()))
+        game.state_logic.handle_result(game.state.Rebase(game.states.InGame()))
         game.state_logic.loop()
 
 

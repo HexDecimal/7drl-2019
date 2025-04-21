@@ -10,7 +10,8 @@ from game.typing import TurnQueue_
 
 
 def init() -> None:
-    g.world = tcod.ecs.World()
+    """Initialize the world globally."""
+    g.world = tcod.ecs.Registry()
     g.world[None].components[MessageLog] = []
     g.world[None].components[TurnQueue_] = TurnQueue_()
 

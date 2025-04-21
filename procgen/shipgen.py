@@ -1,3 +1,5 @@
+"""Ship generation."""
+
 from __future__ import annotations
 
 import itertools
@@ -133,9 +135,12 @@ r_bridge = RoomType(
 
 
 class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
+    """Connect adjacent ship rooms using a growing tree algorithm."""
+
     CARDINALS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
     def __init__(self, ship: Ship) -> None:
+        """Prepare connecting the rooms of `ship`."""
         self.ship = ship
         self.visited = ship.rooms == -1
         self.visited[self.ship.root_node] = True
@@ -165,6 +170,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
                 yield (neighbor, node), weight
 
     def select_stem(self) -> int:
+        """Fetch the next node to connect from."""
         return self.ship.rng.randint(0, len(self.stem) - 1)
 
     def select_neighbor(
@@ -277,18 +283,22 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
 
 
 class Ship:
+    """Ship generator."""
+
     start_position: tuple[int, int, int]
     player: tcod.ecs.Entity
     room_width = 4
     room_height = 4
 
     def __init__(self, seed: int | None = None) -> None:
+        """Generate a new ship."""
         if seed is None:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)
         self.generate()
 
     def np_sample(self, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
+        """Return `k` random True indexes from a boolean `array`."""
         if not np.any(array):
             return []  # This should be removed, will silently ignore bad data
         assert len(array.shape) == 3  # noqa: PLR2004
@@ -296,6 +306,7 @@ class Ship:
         return [(x, y, z) for x, y, z in self.rng.sample(where, k)]
 
     def generate(self) -> None:
+        """Perform all ship generation.."""
         self.length = 64
         self.half_width = 8
         self.depth = 1
@@ -332,6 +343,7 @@ class Ship:
         self.finalize()
 
     def gen_form(self) -> None:
+        """Generate the ship hull shape."""
         x = 0
         while x < self.length:
             xx = x + self.rng.randint(1, self.width)
@@ -345,6 +357,7 @@ class Ship:
             self.rooms[x, -self.form[0, x] :, 0] = -1
 
     def gen_halls(self) -> None:
+        """Place hallways along ship."""
         start_x = self.rng.randint(0, self.length // 4)
         end_x = self.rooms.shape[0] - self.rng.randint(0, self.length // 4)
         self.rooms[start_x:end_x, self.half_width, 0] = 1
@@ -409,6 +422,8 @@ class Ship:
         return (neighbors != 0) & free  # type: ignore[no-any-return]
 
     def finalize(self) -> None:  # noqa: C901
+        """Perform generation steps after room placement."""
+
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:
             if 0 <= cx < self.rooms.shape[0] and 0 <= cy < self.rooms.shape[1]:
                 return self.room_types[self.rooms[cx, cy, cz]]
@@ -458,6 +473,8 @@ class Ship:
             finalize_room(room, room_id, self)
 
     def show(self) -> str:
+        """Return debug output."""
+
         def icon(x: int, y: int) -> str:
             if self.rooms[x, y] == -1:
                 return " "

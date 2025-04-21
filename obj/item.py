@@ -7,7 +7,7 @@ from game.components import Graphic, Name
 from game.tags import IsItem
 
 
-def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_item(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = world[object()]
     new_entity.components.update(
         {
@@ -19,7 +19,7 @@ def new_item(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     return new_entity
 
 
-def new_spare_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_spare_core(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = new_item(world, location)
     new_entity.components.update(
         {

@@ -14,4 +14,4 @@ if TYPE_CHECKING:
 context: tcod.context.Context
 console: tcod.console.Console
 states: list[game.state.State] = []
-world: tcod.ecs.World
+world: tcod.ecs.Registry

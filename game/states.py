@@ -57,21 +57,20 @@ PICKUP_KEYS = (
 
 
 @attrs.define()
-class MainMenu(State):
-    def on_enter(self) -> None:
-        g.console.print(0, 0, "Hello zone!")
+class InGame(State):
+    """Primary in-game state."""
 
-
-@attrs.define()
-class Game(State):
     def on_enter(self) -> None:
+        """Ensure the player is the active entity."""
         active_zone().simulate()
 
     def on_draw(self, console: tcod.console.Console) -> None:
+        """Normal rendering."""
         active_zone().render(console)
         self.draw_ui()
 
     def draw_ui(self) -> None:
+        """Render the UI elements."""
         ui_console = tcod.console.Console(20, 20, order="F")
         ui_console.draw_rect(0, 0, 1, ui_console.height, ch=ord("│"))
         ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ch=ord("─"))
@@ -97,6 +96,7 @@ class Game(State):
         log_console.blit(g.console, 0, g.console.height - log_console.height, bg_alpha=0.9)
 
     def on_event(self, event: tcod.event.Event) -> StateResult:
+        """Handle player character events."""
         if isinstance(event, tcod.event.Quit):
             raise SystemExit
         if isinstance(event, tcod.event.KeyDown):

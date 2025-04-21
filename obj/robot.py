@@ -21,7 +21,7 @@ class RobotActor(component.actor.Actor):
         return game.actions.Standby()
 
 
-def new_robot(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_robot(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = world[object()]
     new_entity.components.update(
         {

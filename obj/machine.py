@@ -9,7 +9,7 @@ from game.components import Graphic, Interactable
 from game.tags import IsBlocking, IsIn
 
 
-def new_machine(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_machine(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = world[object()]
     new_entity.components.update(
         {
@@ -40,7 +40,7 @@ def drive_core_interaction(issuer: tcod.ecs.Entity, target: tcod.ecs.Entity) -> 
     return Success()
 
 
-def new_drive_core(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_drive_core(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = new_machine(world, location)
     new_entity.components.update(
         {

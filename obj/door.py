@@ -18,7 +18,7 @@ def door_interaction(
     return Success()
 
 
-def new_auto_door(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_auto_door(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = world[object()]
     new_entity.components.update(
         {

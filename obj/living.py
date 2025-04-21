@@ -9,7 +9,7 @@ from game.tags import IsBlocking, IsControllable
 from game.verbs import take_control_interaction
 
 
-def new_human(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_human(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = world[object()]
     new_entity.components.update(
         {
@@ -23,7 +23,7 @@ def new_human(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
     return new_entity
 
 
-def new_player(world: tcod.ecs.World, location: Location) -> tcod.ecs.Entity:
+def new_player(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity = new_human(world, location)
     new_entity.components.update(
         {

@@ -38,4 +38,5 @@ class Graphic:
     priority: int = 0
 
     def get(self) -> tuple[int, tuple[int, int, int]]:
+        """Return `(ch, fg)`."""
         return self.ch, self.fg

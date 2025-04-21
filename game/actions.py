@@ -26,7 +26,9 @@ class BumpAction(Action):
 
 @attrs.define()
 class FightPlayer:
-    def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
+    """Seek and attack player."""
+
+    def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:  # noqa: D102
         action = Follow(active_player()).__call__(entity)
         if action:
             return action
@@ -34,11 +36,14 @@ class FightPlayer:
 
 
 def wait(_entity: tcod.ecs.Entity) -> ActionResult:
+    """Idle action."""
     return Success()
 
 
 @attrs.define()
 class Interact:
+    """Contextual interaction with contextual object."""
+
     target: tcod.ecs.Entity
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
@@ -49,6 +54,8 @@ class Interact:
 
 @attrs.define()
 class BumpInteract(BumpAction):
+    """Contextual interaction in direction with contextual object."""
+
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         destination = entity.components[Location] + self.direction
         for target in entity.world.Q.all_of(tags=[destination], components=[Interactable]):
@@ -58,6 +65,8 @@ class BumpInteract(BumpAction):
 
 @attrs.define()
 class Bump:
+    """Contextual interaction in direction."""
+
     direction: tuple[int, int, int]
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
@@ -81,12 +90,16 @@ class PlayerControl:
 
 @attrs.define()
 class Standby:
+    """Idle action."""
+
     def __call__(self, _entity: tcod.ecs.Entity) -> ActionResult:
         return Impossible("End of action.")
 
 
 @attrs.define()
 class Attack:
+    """Melee attack."""
+
     target: tcod.ecs.Entity
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
@@ -100,6 +113,8 @@ class Attack:
 
 @attrs.define()
 class BumpAttack(BumpAction):
+    """Directional attack."""
+
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         destination = entity.components[Location] + self.direction
         for target in entity.world.Q.all_of(tags=[destination], components=[component.actor.Actor]):
@@ -109,6 +124,8 @@ class BumpAttack(BumpAction):
 
 @attrs.define()
 class PickupItem:
+    """Take an item off the floor."""
+
     target: tcod.ecs.Entity
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
@@ -123,6 +140,8 @@ class PickupItem:
 
 @attrs.define()
 class PickupGeneral:
+    """Contextual pickup action."""
+
     def get_items(self, entity: tcod.ecs.Entity) -> Iterator[ActionResult]:
         loc = entity.components[Location]
         for target in entity.world.Q.all_of(tags=[loc, IsItem]):
@@ -139,6 +158,8 @@ class PickupGeneral:
 
 @attrs.define()
 class MoveTo:
+    """Teleport to position."""
+
     location: Location
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
@@ -158,12 +179,16 @@ class MoveTo:
 
 @attrs.define()
 class MoveBy(BumpAction):
+    """Move in direction."""
+
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         return MoveTo(entity.components[Location] + self.direction).__call__(entity)
 
 
 @attrs.define()
 class MoveTowards:
+    """Dumb move towards action."""
+
     location: Location
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
@@ -176,6 +201,8 @@ class MoveTowards:
 
 @attrs.define()
 class Follow:
+    """Path to entity."""
+
     target: tcod.ecs.Entity
     pathfinder: tcod.path.AStar | None = None
 
@@ -199,6 +226,8 @@ class Follow:
 
 @attrs.define()
 class ReturnControlToPlayer:
+    """Abort remote control."""
+
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         player = active_player()
         if entity is player:
@@ -211,6 +240,8 @@ class ReturnControlToPlayer:
 
 @attrs.define()
 class RemoteControl:
+    """Pass player control to entity.."""
+
     target: tcod.ecs.Entity
 
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
