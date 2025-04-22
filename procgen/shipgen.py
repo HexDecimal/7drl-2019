@@ -15,7 +15,6 @@ import tcod.libtcodpy
 from numpy.typing import NDArray
 
 import engine.zone
-import g
 import obj.door
 import obj.item
 import obj.living
@@ -56,21 +55,21 @@ class RoomType:
         return self.name
 
 
-def finalize_room(room: RoomType, room_id: int, ship: Ship) -> None:
+def finalize_room(world: tcod.ecs.Registry, room: RoomType, room_id: int, ship: Ship) -> None:
     """Place items/furniture in room."""
     if room.name == "Space":
         pass
     elif room.name == "Drive Core":
         pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
-        obj.machine.new_drive_core(g.world, ship.zone[pos1])
-        obj.item.new_spare_core(g.world, ship.zone[pos2])
+        obj.machine.new_drive_core(world, ship.zone[pos1])
+        obj.item.new_spare_core(world, ship.zone[pos2])
     elif room.name == "Hangar":
         pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
-        ship.player = obj.living.new_player(g.world, ship.zone[pos1])
-        obj.robot.new_robot(g.world, ship.zone[pos2])
+        ship.player = obj.living.new_player(world, ship.zone[pos1])
+        obj.robot.new_robot(world, ship.zone[pos2])
     else:
         for xyz in ship.np_sample(get_area(room_id, ship), 1):
-            obj.item.new_item(g.world, ship.zone[xyz])
+            obj.item.new_item(world, ship.zone[xyz])
 
 
 r_undefined = RoomType()
@@ -139,7 +138,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
 
     CARDINALS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
-    def __init__(self, ship: Ship) -> None:
+    def __init__(self, world: tcod.ecs.Registry, ship: Ship) -> None:
         """Prepare connecting the rooms of `ship`."""
         self.ship = ship
         self.visited = ship.rooms == -1
@@ -147,6 +146,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         super().__init__()
         # Connected rooms: Tuple[axis, index, room_id1, room_id2]
         self.connected: set[tuple[int, int, int, int]] = set()
+        self.world = world
         self.visit(self.ship.root_node, None)
 
     def grow(self) -> None:
@@ -245,10 +245,11 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         if "--debug" in sys.argv:
             self.connect_rooms_debug(prev, node)
         else:
-            self.connect_rooms(prev, node)
+            self.connect_rooms(self.world, prev, node)
 
     def connect_rooms(
         self,
+        world: tcod.ecs.Registry,
         room_a: tuple[int, int, int],
         room_b: tuple[int, int, int],
     ) -> None:
@@ -266,7 +267,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             self.ship.room_types[self.ship.rooms[room_a]],
             self.ship.room_types[self.ship.rooms[room_b]],
         ).floor
-        obj.door.new_auto_door(g.world, self.ship.zone[door])
+        obj.door.new_auto_door(world, self.ship.zone[door])
 
     def connect_rooms_debug(
         self,
@@ -290,12 +291,12 @@ class Ship:
     room_width = 4
     room_height = 4
 
-    def __init__(self, seed: int | None = None) -> None:
+    def __init__(self, world: tcod.ecs.Registry, seed: int | None = None) -> None:
         """Generate a new ship."""
         if seed is None:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)
-        self.generate()
+        self.generate(world)
 
     def np_sample(self, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
         """Return `k` random True indexes from a boolean `array`."""
@@ -305,14 +306,17 @@ class Ship:
         where: list[list[int]] = np.argwhere(array).tolist()  # type: ignore[assignment]
         return [(x, y, z) for x, y, z in self.rng.sample(where, k)]
 
-    def generate(self) -> None:
+    def generate(
+        self,
+        world: tcod.ecs.Registry,
+    ) -> None:
         """Perform all ship generation.."""
         self.length = 64
         self.half_width = 8
         self.depth = 1
         self.width = self.half_width * 2 + self.rng.randint(0, 1)
         self.zone = engine.zone.Zone((self.length * self.room_width + 1, self.width * self.room_height + 1, self.depth))
-        g.world[None].components[engine.zone.Zone] = self.zone
+        world[None].components[engine.zone.Zone] = self.zone
 
         self.form = np.zeros((self.depth, self.length), dtype=int)
         self.rooms = np.zeros((self.length, self.width, self.depth), dtype=int, order="F")
@@ -340,7 +344,7 @@ class Ship:
             pass
         self.rooms[self.rooms == 0] = 1
 
-        self.finalize()
+        self.finalize(world)
 
     def gen_form(self) -> None:
         """Generate the ship hull shape."""
@@ -421,7 +425,7 @@ class Ship:
         )
         return (neighbors != 0) & free  # type: ignore[no-any-return]
 
-    def finalize(self) -> None:  # noqa: C901
+    def finalize(self, world: tcod.ecs.Registry) -> None:  # noqa: C901
         """Perform generation steps after room placement."""
 
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:
@@ -467,10 +471,10 @@ class Ship:
         self.zone.data["room_id"][:-1, :-1, :] = np.kron(self.rooms, np.ones((self.room_width, self.room_height, 1)))
         self.zone.room_types = self.room_types
 
-        ShipRoomConnector(self).generate()
+        ShipRoomConnector(world, self).generate()
 
         for room_id, room in self.room_types.items():
-            finalize_room(room, room_id, self)
+            finalize_room(world, room, room_id, self)
 
     def show(self) -> str:
         """Return debug output."""

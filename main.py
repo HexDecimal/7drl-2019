@@ -7,7 +7,6 @@ from typing import Any
 
 import tcod.console
 import tcod.context
-import tcod.ecs
 import tcod.tileset
 
 import g
@@ -30,7 +29,7 @@ g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, o
 def main() -> None:
     """Main entry function."""
     with tcod.context.new(**CONFIG) as g.context:
-        game.world_init.init()
+        g.world = game.world_init.new_world()
         game.state_logic.handle_result(game.state.Rebase(game.states.InGame()))
         game.state_logic.loop()
 
