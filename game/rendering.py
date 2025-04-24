@@ -5,7 +5,7 @@ import tcod.ecs
 
 from component.location import Location
 from engine.zone import Zone
-from game.components import Graphic, Shape3D
+from game.components import Graphic, Shape3D, TileData
 
 
 def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
@@ -25,11 +25,9 @@ def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
 
     con_view = (slice(cam_left - cam_x, cam_right - cam_x), slice(cam_top - cam_y, cam_bottom - cam_y))
 
-    tile = zone.data["tile"].T[cam_left:cam_right, cam_top:cam_bottom, cam_z]
+    tile = zone.entity.components[TileData].T[cam_left:cam_right, cam_top:cam_bottom, cam_z]
 
-    console.rgb.T["ch"][con_view] = tile["ch"]
-    console.rgb.T["fg"][con_view] = tile["fg"]
-    console.rgb.T["bg"][con_view] = tile["bg"]
+    console.rgb.T[con_view] = tile[["ch", "fg", "bg"]]
 
     console_ch_fg = console.rgb[["ch", "fg"]]
 

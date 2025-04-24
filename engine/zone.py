@@ -1,29 +1,30 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import numpy as np
 import tcod.ecs
 
 import component.location
 import tiles
-from game.components import Shape3D
+from game.components import RoomIDArray, Shape3D, TileData
 
 if TYPE_CHECKING:
     import procgen.shipgen
 
 
 class Zone:
-    DTYPE: Final = [("tile", tiles.DTYPE), ("room_id", np.int16)]
     room_types: dict[int, procgen.shipgen.RoomType]
 
     def __init__(self, entity: tcod.ecs.Entity, shape: tuple[int, int, int]) -> None:
         self.entity = entity
         entity.components[Shape3D] = shape
 
-        self.data = np.empty(shape, dtype=self.DTYPE)
-        self.data["tile"] = tiles.metal_wall
-        self.data["tile"].T[1:-1, 1:-1, :] = tiles.metal_floor
+        entity.components[TileData] = tiles_ = np.zeros(shape, dtype=tiles.DTYPE)
+        tiles_[:] = tiles.metal_wall
+        tiles_.T[1:-1, 1:-1, :] = tiles.metal_floor
+
+        entity.components[RoomIDArray] = np.zeros(shape, dtype=np.int16)
 
     def __getitem__(
         self,

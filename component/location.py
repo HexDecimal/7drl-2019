@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Self
 
 import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
-from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     import engine.zone
@@ -52,8 +51,9 @@ class Location:
         return self.x, self.y, self.z
 
     @property
-    def data(self) -> NDArray[Any]:
-        return self.zone.data.T[self.x, self.y, self.z]  # type: ignore[no-any-return]
+    def ijk(self) -> tuple[int, int, int]:
+        """Return the ijk coordinates of this location."""
+        return self.z, self.y, self.x
 
     def __add__(self, other: tuple[int, int, int]) -> Location:
         """Return a location relative to this one."""

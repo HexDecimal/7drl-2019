@@ -13,7 +13,7 @@ from component.location import Location
 from engine.helpers import active_player
 from game.action import Action, ActionResult, Impossible, Success
 from game.action_logic import report
-from game.components import AttackSpeed, Graphic, Interactable, MoveSpeed, Name
+from game.components import AttackSpeed, Graphic, Interactable, MoveSpeed, Name, TileData
 from game.tags import IsBlocking, IsControllable, IsControlled, IsIn, IsItem
 
 
@@ -163,7 +163,8 @@ class MoveTo:
     location: Location
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
-        if not self.location.data["tile"]["walkable"]:
+        walkable = self.location.zone.entity.components[TileData]["walkable"][self.location.ijk]
+        if not walkable:
             return Impossible("Blocked.")
         for entity in actor.world.Q.all_of(tags=[self.location, IsBlocking]):
             if IsBlocking in entity.tags:
@@ -210,7 +211,7 @@ class Follow:
         if self.pathfinder is None:
             z = entity.components[Location].z
             self.pathfinder = tcod.path.AStar(
-                entity.components[Location].zone.data["tile"]["walkable"].T[:, :, z],
+                entity.components[Location].zone.entity.components[TileData]["walkable"].T[:, :, z],
             )
 
         my_coord = entity.components[Location].xyz[:2]

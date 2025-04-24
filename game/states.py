@@ -11,7 +11,7 @@ import game.actions
 from component.location import Location
 from engine.helpers import active_player, active_zone, get_controlled_actor
 from game.action_logic import do_action, simulate
-from game.components import MessageLog
+from game.components import MessageLog, RoomIDArray
 from game.rendering import render_zone
 from game.state import State, StateResult
 from game.typing import TurnQueue_
@@ -78,7 +78,9 @@ class InGame(State):
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ch=ord("└"))
         ui_console.print(1, 0, f"Time: {g.world[None].components[TurnQueue_].time}")
         ui_console.print(1, 1, f"Pos: {active_player().components[Location].xyz}")
-        room_name = active_zone().room_types[active_zone().data["room_id"].T[active_player().components[Location].xyz]]
+        room_name = active_zone().room_types[
+            active_zone().entity.components[RoomIDArray].T[active_player().components[Location].xyz]
+        ]
         ui_console.print(1, 2, f"{room_name}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0, bg_alpha=0.9)

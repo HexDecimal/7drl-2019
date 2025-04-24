@@ -22,6 +22,7 @@ import obj.living
 import obj.machine
 import obj.robot
 import tiles
+from game.components import RoomIDArray, TileData
 from procgen.growing_tree import AbstractGrowingTree
 
 
@@ -35,8 +36,8 @@ class NoRoomError(ProcGenError):
 
 def get_area(room_id: int, ship: Ship, *, indexing: Literal["xy", "ij"]) -> NDArray[np.bool_]:
     """Return the available floor of a room."""
-    area: NDArray[np.bool_] = ship.zone.data["room_id"] == room_id
-    area &= ship.zone.data["tile"]["walkable"] != 0
+    area: NDArray[np.bool_] = ship.zone.entity.components[RoomIDArray] == room_id
+    area &= ship.zone.entity.components[TileData]["walkable"] != 0
     if indexing == "xy":
         return area.T
     return area
@@ -264,9 +265,9 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             assert room_a[1] == room_b[1]
             door_y += self.ship.rng.randint(1, self.ship.room_height - 1)
         door = door_x, door_y, room_b[2]
-        if self.ship.zone.data["tile"]["walkable"].T[door]:
+        if self.ship.zone.entity.components[TileData]["walkable"].T[door]:
             return
-        self.ship.zone.data["tile"].T[door] = max(
+        self.ship.zone.entity.components[TileData].T[door] = max(
             self.ship.room_types[self.ship.rooms.T[room_a]],
             self.ship.room_types[self.ship.rooms.T[room_b]],
         ).floor
@@ -283,7 +284,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             room_b[0] * self.ship.room_width + 2,
             room_b[1] * self.ship.room_height + 2,
         )
-        self.ship.zone.data["tile"].T[line] = tiles.metal_floor._replace(bg=(0, 255, 0))
+        self.ship.zone.entity.components[TileData].T[line] = tiles.metal_floor._replace(bg=(0, 255, 0))
 
 
 class Ship:
@@ -469,13 +470,13 @@ class Ship:
             top_tile = get_merge_tile(room_type, top_type)
             top_left_tile = get_merge_tile(room_type, left_type, top_type, top_left_type)
 
-            self.zone.data["tile"].T[left, top, cz] = top_left_tile
-            self.zone.data["tile"].T[left + 1 : right, top, cz] = top_tile
-            self.zone.data["tile"].T[left, top + 1 : bottom, cz] = left_tile
-            self.zone.data["tile"].T[left + 1 : right, top + 1 : bottom, cz] = room_type.floor
+            self.zone.entity.components[TileData].T[left, top, cz] = top_left_tile
+            self.zone.entity.components[TileData].T[left + 1 : right, top, cz] = top_tile
+            self.zone.entity.components[TileData].T[left, top + 1 : bottom, cz] = left_tile
+            self.zone.entity.components[TileData].T[left + 1 : right, top + 1 : bottom, cz] = room_type.floor
 
-        self.zone.data["room_id"] = -1
-        self.zone.data["room_id"].T[:-1, :-1, :] = np.kron(
+        self.zone.entity.components[RoomIDArray][:] = -1
+        self.zone.entity.components[RoomIDArray].T[:-1, :-1, :] = np.kron(
             self.rooms.T, np.ones((self.room_width, self.room_height, 1))
         )
         self.zone.room_types = self.room_types

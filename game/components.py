@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Protocol
+from typing import TYPE_CHECKING, Any, Final, Protocol
 
 import attrs
+import numpy as np
 import tcod.ecs
+from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     from game.action import ActionResult
@@ -21,6 +23,9 @@ MessageLog: Final = ("log", list[str])
 """Log of recorded messages."""
 
 Shape3D = ("Shape3D", tuple[int, int, int])
+
+TileData = ("TileData", NDArray[Any])
+RoomIDArray = ("RoomIDArray", NDArray[np.integer])
 
 
 class Interactable(Protocol):
