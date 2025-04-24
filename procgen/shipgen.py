@@ -144,7 +144,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
     def __init__(self, world: tcod.ecs.Registry, ship: Ship) -> None:
         """Prepare connecting the rooms of `ship`."""
         self.ship = ship
-        self.visited = ship.rooms == -1
+        self.visited = ship.rooms.T == -1
         self.visited[self.ship.root_node] = True
         super().__init__()
         # Connected rooms: Tuple[axis, index, room_id1, room_id2]
@@ -205,7 +205,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             assert node1[0] == node2[0]
             assert node1[1] != node2[1]
             axis = 1
-        return (axis, node1[axis], self.ship.rooms[node1], self.ship.rooms[node2])
+        return (axis, node1[axis], self.ship.rooms.T[node1], self.ship.rooms.T[node2])
 
     def get_neighbors(
         self,
@@ -218,12 +218,12 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
                 continue
             if self.visited[neighbor]:
                 continue
-            if self.ship.rooms[node] == self.ship.rooms[neighbor]:
+            if self.ship.rooms.T[node] == self.ship.rooms.T[neighbor]:
                 yield neighbor, 500
             yield neighbor, 1
 
     def get_room_type(self, node: tuple[int, int, int]) -> RoomType:
-        return self.ship.room_types[self.ship.rooms[node]]
+        return self.ship.room_types[self.ship.rooms.T[node]]
 
     def visit(
         self,
@@ -267,8 +267,8 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         if self.ship.zone.data["tile"]["walkable"].T[door]:
             return
         self.ship.zone.data["tile"].T[door] = max(
-            self.ship.room_types[self.ship.rooms[room_a]],
-            self.ship.room_types[self.ship.rooms[room_b]],
+            self.ship.room_types[self.ship.rooms.T[room_a]],
+            self.ship.room_types[self.ship.rooms.T[room_b]],
         ).floor
         obj.door.new_auto_door(world, self.ship.zone[door])
 
@@ -326,7 +326,7 @@ class Ship:
         world[None].components[engine.zone.Zone] = self.zone
 
         self.form = np.zeros((self.depth, self.length), dtype=int)
-        self.rooms = np.zeros((self.length, self.width, self.depth), dtype=int, order="F")
+        self.rooms = np.zeros((self.depth, self.width, self.length), dtype=int)
         self.room_types = {
             -1: r_space,
             0: r_undefined,
@@ -364,14 +364,14 @@ class Ship:
         for x in range(self.length):
             if self.form[0, x] == 0:
                 continue
-            self.rooms[x, : self.form[0, x], 0] = -1
-            self.rooms[x, -self.form[0, x] :, 0] = -1
+            self.rooms.T[x, : self.form[0, x], 0] = -1
+            self.rooms.T[x, -self.form[0, x] :, 0] = -1
 
     def gen_halls(self) -> None:
         """Place hallways along ship."""
         start_x = self.rng.randint(0, self.length // 4)
-        end_x = self.rooms.shape[0] - self.rng.randint(0, self.length // 4)
-        self.rooms[start_x:end_x, self.half_width, 0] = 1
+        end_x = self.rooms.T.shape[0] - self.rng.randint(0, self.length // 4)
+        self.rooms.T[start_x:end_x, self.half_width, 0] = 1
         self.root_node = start_x, self.half_width, 0
         self.start_position = (start_x * self.room_width + 1, self.half_width * self.room_height + 1, 0)
 
@@ -385,7 +385,7 @@ class Ship:
         self.rng.shuffle(sizes)
         for size in sizes:
             try:
-                self.rooms[self.get_free_space(size, 0)] = self.next_room_id
+                self.rooms.T[self.get_free_space(size, 0)] = self.next_room_id
                 break
             except NoRoomError:
                 pass
@@ -401,7 +401,7 @@ class Ship:
         room_area = np.ones((width, height), dtype=bool)
         # Convolve room_area into self.rooms, values of zero mean this room will fit.
         valid = scipy.signal.convolve2d(
-            (self.rooms[..., floor] != 0).astype(int),
+            (self.rooms.T[..., floor] != 0).astype(int),
             room_area,
             "full",
         )[width - 1 : -width + 1, height - 1 : -height + 1]
@@ -410,7 +410,7 @@ class Ship:
             msg = "No space left for room."
             raise NoRoomError(msg)
         x, y = self.rng.choice(valid_where)
-        assert (self.rooms[x : x + width, y : y + height, floor] == 0).all()
+        assert (self.rooms.T[x : x + width, y : y + height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
 
     def get_unclaimed_cell(self) -> tuple[int, int]:
@@ -419,8 +419,8 @@ class Ship:
         return int(where[i][0]), int(where[i][1])
 
     def get_unclaimed_cells(self) -> NDArray[np.bool_]:
-        claimed = self.rooms > 0
-        free = self.rooms == 0
+        claimed = self.rooms.T > 0
+        free = self.rooms.T == 0
         neighbors = scipy.signal.convolve2d(
             in1=claimed,
             in2=[
@@ -436,14 +436,14 @@ class Ship:
         """Perform generation steps after room placement."""
 
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:
-            if 0 <= cx < self.rooms.shape[0] and 0 <= cy < self.rooms.shape[1]:
-                return self.room_types[self.rooms[cx, cy, cz]]
+            if 0 <= cx < self.rooms.T.shape[0] and 0 <= cy < self.rooms.T.shape[1]:
+                return self.room_types[self.rooms.T[cx, cy, cz]]
             return self.room_types[-1]
 
         def iter_cells() -> Iterator[tuple[int, int, int]]:
-            for z in range(self.rooms.shape[2]):
-                for y in range(self.rooms.shape[1] + 1):
-                    for x in range(self.rooms.shape[0] + 1):
+            for z in range(self.rooms.T.shape[2]):
+                for y in range(self.rooms.T.shape[1] + 1):
+                    for x in range(self.rooms.T.shape[0] + 1):
                         yield x, y, z
 
         def get_merge_tile(*rooms: RoomType) -> tiles.Tile:
@@ -475,7 +475,9 @@ class Ship:
             self.zone.data["tile"].T[left + 1 : right, top + 1 : bottom, cz] = room_type.floor
 
         self.zone.data["room_id"] = -1
-        self.zone.data["room_id"].T[:-1, :-1, :] = np.kron(self.rooms, np.ones((self.room_width, self.room_height, 1)))
+        self.zone.data["room_id"].T[:-1, :-1, :] = np.kron(
+            self.rooms.T, np.ones((self.room_width, self.room_height, 1))
+        )
         self.zone.room_types = self.room_types
 
         ShipRoomConnector(world, self).generate()
@@ -487,8 +489,8 @@ class Ship:
         """Return debug output."""
 
         def icon(x: int, y: int) -> str:
-            if self.rooms[x, y] == -1:
+            if self.rooms.T[x, y] == -1:
                 return " "
-            return f"""{self.rooms[x, y, 0] % 10:i}"""
+            return f"""{self.rooms.T[x, y, 0] % 10:i}"""
 
         return "\n".join("".join(icon(x, y) for x in range(self.length)) for y in range(self.width))
