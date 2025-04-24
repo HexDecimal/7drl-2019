@@ -1,3 +1,5 @@
+"""World initialization."""
+
 from __future__ import annotations
 
 import tcod.ecs

@@ -10,8 +10,9 @@ import g
 import game.actions
 from component.location import Location
 from engine.helpers import active_player, active_zone, get_controlled_actor
-from game.action_logic import do_action
+from game.action_logic import do_action, simulate
 from game.components import MessageLog
+from game.rendering import render_zone
 from game.state import State, StateResult
 from game.typing import TurnQueue_
 
@@ -62,11 +63,11 @@ class InGame(State):
 
     def on_enter(self) -> None:
         """Ensure the player is the active entity."""
-        active_zone().simulate()
+        simulate(g.world)
 
     def on_draw(self, console: tcod.console.Console) -> None:
         """Normal rendering."""
-        active_zone().render(g.world[None], console)
+        render_zone(g.world[None], console)
         self.draw_ui()
 
     def draw_ui(self) -> None:
@@ -111,5 +112,5 @@ class InGame(State):
                 do_action(player, game.actions.PickupGeneral())
             else:
                 print(event)
-            active_zone().simulate()
+            simulate(g.world)
         return None

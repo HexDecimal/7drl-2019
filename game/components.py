@@ -20,6 +20,8 @@ AttackSpeed: Final = ("AttackSpeed", int)
 MessageLog: Final = ("log", list[str])
 """Log of recorded messages."""
 
+Shape3D = ("Shape3D", tuple[int, int, int])
+
 
 class Interactable(Protocol):
     """Handle simple bump interactions."""
