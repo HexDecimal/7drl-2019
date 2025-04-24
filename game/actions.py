@@ -210,7 +210,7 @@ class Follow:
         if self.pathfinder is None:
             z = entity.components[Location].z
             self.pathfinder = tcod.path.AStar(
-                entity.components[Location].zone.data["tile"]["walkable"][:, :, z],
+                entity.components[Location].zone.data["tile"]["walkable"].T[:, :, z],
             )
 
         my_coord = entity.components[Location].xyz[:2]

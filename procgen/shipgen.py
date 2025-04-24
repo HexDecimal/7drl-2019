@@ -6,6 +6,7 @@ import itertools
 import random
 import sys
 from collections.abc import Iterator
+from typing import Literal
 
 import attrs
 import numpy as np
@@ -32,10 +33,12 @@ class NoRoomError(ProcGenError):
     """A required room can not be placed or found."""
 
 
-def get_area(room_id: int, ship: Ship) -> NDArray[np.bool_]:
+def get_area(room_id: int, ship: Ship, *, indexing: Literal["xy", "ij"]) -> NDArray[np.bool_]:
     """Return the available floor of a room."""
     area: NDArray[np.bool_] = ship.zone.data["room_id"] == room_id
     area &= ship.zone.data["tile"]["walkable"] != 0
+    if indexing == "xy":
+        return area.T
     return area
 
 
@@ -60,15 +63,15 @@ def finalize_room(world: tcod.ecs.Registry, room: RoomType, room_id: int, ship: 
     if room.name == "Space":
         pass
     elif room.name == "Drive Core":
-        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
+        pos1, pos2 = ship.np_sample(get_area(room_id, ship, indexing="xy"), 2)
         obj.machine.new_drive_core(world, ship.zone[pos1])
         obj.item.new_spare_core(world, ship.zone[pos2])
     elif room.name == "Hangar":
-        pos1, pos2 = ship.np_sample(get_area(room_id, ship), 2)
+        pos1, pos2 = ship.np_sample(get_area(room_id, ship, indexing="xy"), 2)
         ship.player = obj.living.new_player(world, ship.zone[pos1])
         obj.robot.new_robot(world, ship.zone[pos2])
     else:
-        for xyz in ship.np_sample(get_area(room_id, ship), 1):
+        for xyz in ship.np_sample(get_area(room_id, ship, indexing="xy"), 1):
             obj.item.new_item(world, ship.zone[xyz])
 
 
@@ -261,9 +264,9 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             assert room_a[1] == room_b[1]
             door_y += self.ship.rng.randint(1, self.ship.room_height - 1)
         door = door_x, door_y, room_b[2]
-        if self.ship.zone.data["tile"]["walkable"][door]:
+        if self.ship.zone.data["tile"]["walkable"].T[door]:
             return
-        self.ship.zone.data["tile"][door] = max(
+        self.ship.zone.data["tile"].T[door] = max(
             self.ship.room_types[self.ship.rooms[room_a]],
             self.ship.room_types[self.ship.rooms[room_b]],
         ).floor
@@ -280,7 +283,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             room_b[0] * self.ship.room_width + 2,
             room_b[1] * self.ship.room_height + 2,
         )
-        self.ship.zone.data["tile"][line] = tiles.metal_floor._replace(bg=(0, 255, 0))
+        self.ship.zone.data["tile"].T[line] = tiles.metal_floor._replace(bg=(0, 255, 0))
 
 
 class Ship:
@@ -318,7 +321,7 @@ class Ship:
         self.depth = 1
         self.width = self.half_width * 2 + self.rng.randint(0, 1)
         self.zone = engine.zone.Zone(
-            entity, (self.length * self.room_width + 1, self.width * self.room_height + 1, self.depth)
+            entity, (self.depth, self.width * self.room_height + 1, self.length * self.room_width + 1)
         )
         world[None].components[engine.zone.Zone] = self.zone
 
@@ -466,13 +469,13 @@ class Ship:
             top_tile = get_merge_tile(room_type, top_type)
             top_left_tile = get_merge_tile(room_type, left_type, top_type, top_left_type)
 
-            self.zone.data["tile"][left, top, cz] = top_left_tile
-            self.zone.data["tile"][left + 1 : right, top, cz] = top_tile
-            self.zone.data["tile"][left, top + 1 : bottom, cz] = left_tile
-            self.zone.data["tile"][left + 1 : right, top + 1 : bottom, cz] = room_type.floor
+            self.zone.data["tile"].T[left, top, cz] = top_left_tile
+            self.zone.data["tile"].T[left + 1 : right, top, cz] = top_tile
+            self.zone.data["tile"].T[left, top + 1 : bottom, cz] = left_tile
+            self.zone.data["tile"].T[left + 1 : right, top + 1 : bottom, cz] = room_type.floor
 
         self.zone.data["room_id"] = -1
-        self.zone.data["room_id"][:-1, :-1, :] = np.kron(self.rooms, np.ones((self.room_width, self.room_height, 1)))
+        self.zone.data["room_id"].T[:-1, :-1, :] = np.kron(self.rooms, np.ones((self.room_width, self.room_height, 1)))
         self.zone.room_types = self.room_types
 
         ShipRoomConnector(world, self).generate()

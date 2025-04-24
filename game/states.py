@@ -78,7 +78,7 @@ class InGame(State):
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ch=ord("└"))
         ui_console.print(1, 0, f"Time: {g.world[None].components[TurnQueue_].time}")
         ui_console.print(1, 1, f"Pos: {active_player().components[Location].xyz}")
-        room_name = active_zone().room_types[active_zone().data["room_id"][active_player().components[Location].xyz]]
+        room_name = active_zone().room_types[active_zone().data["room_id"].T[active_player().components[Location].xyz]]
         ui_console.print(1, 2, f"{room_name}")
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0, bg_alpha=0.9)

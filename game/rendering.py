@@ -16,7 +16,7 @@ def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
     cam_x -= console.width // 2
     cam_y -= console.height // 2
 
-    width, height, depth = entity.components[Shape3D]
+    depth, height, width = entity.components[Shape3D]
 
     cam_left = max(0, cam_x)
     cam_top = max(0, cam_y)
@@ -25,7 +25,7 @@ def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
 
     con_view = (slice(cam_left - cam_x, cam_right - cam_x), slice(cam_top - cam_y, cam_bottom - cam_y))
 
-    tile = zone.data["tile"][cam_left:cam_right, cam_top:cam_bottom, cam_z]
+    tile = zone.data["tile"].T[cam_left:cam_right, cam_top:cam_bottom, cam_z]
 
     console.rgb.T["ch"][con_view] = tile["ch"]
     console.rgb.T["fg"][con_view] = tile["fg"]

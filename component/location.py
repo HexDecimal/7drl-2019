@@ -53,7 +53,7 @@ class Location:
 
     @property
     def data(self) -> NDArray[Any]:
-        return self.zone.data[self.x, self.y, self.z]  # type: ignore[no-any-return]
+        return self.zone.data.T[self.x, self.y, self.z]  # type: ignore[no-any-return]
 
     def __add__(self, other: tuple[int, int, int]) -> Location:
         """Return a location relative to this one."""

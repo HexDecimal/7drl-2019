@@ -21,9 +21,9 @@ class Zone:
         self.entity = entity
         entity.components[Shape3D] = shape
 
-        self.data = np.empty(shape, dtype=self.DTYPE, order="F")
+        self.data = np.empty(shape, dtype=self.DTYPE)
         self.data["tile"] = tiles.metal_wall
-        self.data["tile"][1:-1, 1:-1, :] = tiles.metal_floor
+        self.data["tile"].T[1:-1, 1:-1, :] = tiles.metal_floor
 
     def __getitem__(
         self,
