@@ -84,7 +84,7 @@ class PlayerControl:
     def __call__(self, entity: tcod.ecs.Entity) -> ActionResult:
         entity.tags.add(IsControllable)
         entity.tags.add(IsControlled)
-        entity.components[Location].zone.camera = entity.components[Location].xyz
+        entity.registry["camera"].components[Location] = entity.components[Location]
         return Impossible("End of action.")  # Further actions will be pending.
 
 

@@ -311,11 +311,15 @@ class Ship:
         world: tcod.ecs.Registry,
     ) -> None:
         """Perform all ship generation.."""
+        entity = world[None]
+
         self.length = 64
         self.half_width = 8
         self.depth = 1
         self.width = self.half_width * 2 + self.rng.randint(0, 1)
-        self.zone = engine.zone.Zone((self.length * self.room_width + 1, self.width * self.room_height + 1, self.depth))
+        self.zone = engine.zone.Zone(
+            entity, (self.length * self.room_width + 1, self.width * self.room_height + 1, self.depth)
+        )
         world[None].components[engine.zone.Zone] = self.zone
 
         self.form = np.zeros((self.depth, self.length), dtype=int)

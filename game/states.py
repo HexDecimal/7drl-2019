@@ -66,7 +66,7 @@ class InGame(State):
 
     def on_draw(self, console: tcod.console.Console) -> None:
         """Normal rendering."""
-        active_zone().render(console)
+        active_zone().render(g.world[None], console)
         self.draw_ui()
 
     def draw_ui(self) -> None:
