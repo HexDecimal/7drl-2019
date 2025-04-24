@@ -27,13 +27,15 @@ def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
 
     tile = zone.data["tile"][cam_left:cam_right, cam_top:cam_bottom, cam_z]
 
-    console.ch[con_view] = tile["ch"]
-    console.fg[con_view] = tile["fg"]
-    console.bg[con_view] = tile["bg"]
+    console.rgb.T["ch"][con_view] = tile["ch"]
+    console.rgb.T["fg"][con_view] = tile["fg"]
+    console.rgb.T["bg"][con_view] = tile["bg"]
+
+    console_ch_fg = console.rgb[["ch", "fg"]]
 
     for e in entity.registry.Q.all_of(components=[Graphic, Location]):
         loc = e.components[Location]
         x = loc.x - cam_x
         y = loc.y - cam_y
         if 0 <= x < console.width and 0 <= y < console.height:
-            console.ch[x, y], console.fg[x, y] = e.components[Graphic].get()
+            console_ch_fg[y, x] = e.components[Graphic].get()

@@ -30,7 +30,7 @@ def handle_result(result: StateResult) -> None:
 def loop() -> None:
     """State based game loop."""
     while g.states:
-        g.console = g.context.new_console(*CONSOLE_MIN_SIZE, order="F")
+        g.console = g.context.new_console(*CONSOLE_MIN_SIZE)
         g.states[-1].on_draw(g.console)
         g.context.present(g.console, integer_scaling=True, keep_aspect=True)
         for event in tcod.event.wait():

@@ -72,7 +72,7 @@ class InGame(State):
 
     def draw_ui(self) -> None:
         """Render the UI elements."""
-        ui_console = tcod.console.Console(20, 20, order="F")
+        ui_console = tcod.console.Console(20, 20)
         ui_console.draw_rect(0, 0, 1, ui_console.height, ch=ord("│"))
         ui_console.draw_rect(1, ui_console.height - 1, ui_console.width, 1, ch=ord("─"))
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ch=ord("└"))
@@ -83,7 +83,7 @@ class InGame(State):
 
         ui_console.blit(g.console, g.console.width - ui_console.width, 0, bg_alpha=0.9)
 
-        log_console = tcod.console.Console(80, 10, order="F")
+        log_console = tcod.console.Console(80, 10)
         log_console.draw_rect(0, 0, log_console.width, 1, ch=ord("─"))
         log_console.draw_rect(log_console.width - 1, 1, 1, log_console.height, ch=ord("│"))
         log_console.draw_rect(log_console.width - 1, 0, 1, 1, ch=ord("┐"))

@@ -23,7 +23,7 @@ CONFIG: dict[str, Any] = {
     "vsync": True,
 }
 
-g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12, order="F")
+g.console = tcod.console.Console(CONFIG["width"] // 8, CONFIG["height"] // 12)
 
 
 def main() -> None:
