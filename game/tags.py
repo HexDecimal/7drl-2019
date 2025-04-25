@@ -22,3 +22,6 @@ IsActive: Final = "IsActive"
 
 IsPlayer: Final = "IsPlayer"
 """Entity is the primary player character."""
+
+IsStartPos: Final = "IsStartPos"
+"""Is the player entry position for this zone."""

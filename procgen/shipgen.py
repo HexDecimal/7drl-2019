@@ -18,11 +18,12 @@ from numpy.typing import NDArray
 import engine.zone
 import obj.door
 import obj.item
-import obj.living
 import obj.machine
 import obj.robot
 import tiles
+from component.location import Location
 from game.components import RoomIDArray, TileData
+from game.tags import IsStartPos
 from procgen.growing_tree import AbstractGrowingTree
 
 
@@ -69,7 +70,9 @@ def finalize_room(world: tcod.ecs.Registry, room: RoomType, room_id: int, ship: 
         obj.item.new_spare_core(world, ship.zone[pos2])
     elif room.name == "Hangar":
         pos1, pos2 = ship.np_sample(get_area(room_id, ship, indexing="xy"), 2)
-        obj.living.new_player(world, ship.zone[pos1])
+        start_pos = world[object()]
+        start_pos.components[Location] = ship.zone[pos1]
+        start_pos.tags.add(IsStartPos)
         obj.robot.new_robot(world, ship.zone[pos2])
     else:
         for xyz in ship.np_sample(get_area(room_id, ship, indexing="xy"), 1):
@@ -290,7 +293,6 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
 class Ship:
     """Ship generator."""
 
-    start_position: tuple[int, int, int]
     room_width = 4
     room_height = 4
 
@@ -312,7 +314,7 @@ class Ship:
     def generate(
         self,
         world: tcod.ecs.Registry,
-    ) -> None:
+    ) -> tcod.ecs.Entity:
         """Perform all ship generation.."""
         entity = world[None]
 
@@ -352,6 +354,7 @@ class Ship:
         self.rooms[self.rooms == 0] = 1
 
         self.finalize(world)
+        return entity
 
     def gen_form(self) -> None:
         """Generate the ship hull shape."""
@@ -373,7 +376,6 @@ class Ship:
         end_x = self.rooms.T.shape[0] - self.rng.randint(0, self.length // 4)
         self.rooms.T[start_x:end_x, self.half_width, 0] = 1
         self.root_node = start_x, self.half_width, 0
-        self.start_position = (start_x * self.room_width + 1, self.half_width * self.room_height + 1, 0)
 
     def add_new_room(self, room: RoomType, floor: int = 0) -> None:  # noqa: ARG002
         sizes = list(
