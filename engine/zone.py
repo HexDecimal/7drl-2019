@@ -31,4 +31,4 @@ class Zone:
         xyz: tuple[int, int, int],
     ) -> component.location.Location:
         """Return a location, creating a new one if it doesn't exist."""
-        return component.location.Location(*xyz, zone=self)
+        return component.location.Location(*xyz, zone=self.entity)

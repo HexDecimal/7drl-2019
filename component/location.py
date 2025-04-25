@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
-
-if TYPE_CHECKING:
-    import engine.zone
 
 
 @attrs.define(frozen=True)
@@ -17,7 +14,7 @@ class Location:
     x: int = attrs.field(converter=int)
     y: int = attrs.field(converter=int)
     z: int = attrs.field(converter=int)
-    zone: engine.zone.Zone
+    zone: tcod.ecs.Entity
 
     def replace(
         self,
@@ -25,7 +22,7 @@ class Location:
         y: int | None = None,
         z: int | None = None,
         *,
-        zone: engine.zone.Zone | None = None,
+        zone: tcod.ecs.Entity | None = None,
     ) -> Self:
         """Return a copy with the given parameters replaced."""
         return self.__class__(

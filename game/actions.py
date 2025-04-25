@@ -163,7 +163,7 @@ class MoveTo:
     location: Location
 
     def __call__(self, actor: tcod.ecs.Entity) -> ActionResult:
-        walkable = self.location.zone.entity.components[TileData]["walkable"][self.location.ijk]
+        walkable = self.location.zone.components[TileData]["walkable"][self.location.ijk]
         if not walkable:
             return Impossible("Blocked.")
         for entity in actor.world.Q.all_of(tags=[self.location, IsBlocking]):
@@ -211,7 +211,7 @@ class Follow:
         if self.pathfinder is None:
             z = entity.components[Location].z
             self.pathfinder = tcod.path.AStar(
-                entity.components[Location].zone.entity.components[TileData]["walkable"].T[:, :, z],
+                entity.components[Location].zone.components[TileData]["walkable"].T[:, :, z],
             )
 
         my_coord = entity.components[Location].xyz[:2]
