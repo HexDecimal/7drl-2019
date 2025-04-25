@@ -6,6 +6,8 @@ import attrs
 import tcod.ecs
 import tcod.ecs.callbacks
 
+from game.tags import IsIn
+
 
 @attrs.define(frozen=True)
 class Location:
@@ -67,3 +69,7 @@ def on_location_changed(entity: tcod.ecs.Entity, old: Location | None, new: Loca
         entity.tags.remove(old)
     if new is not None:
         entity.tags.add(new)
+        if old is None or old.zone is not new.zone:
+            entity.relation_tag[IsIn] = new.zone
+    else:
+        del entity.relation_tag[IsIn]

@@ -296,12 +296,11 @@ class Ship:
     room_width = 4
     room_height = 4
 
-    def __init__(self, world: tcod.ecs.Registry, seed: int | None = None) -> None:
+    def __init__(self, seed: int | None = None) -> None:
         """Generate a new ship."""
         if seed is None:
             seed = random.getrandbits(64)
         self.rng = random.Random(seed)
-        self.generate(world)
 
     def np_sample(self, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
         """Return `k` random True indexes from a boolean `array`."""
