@@ -69,7 +69,7 @@ def finalize_room(world: tcod.ecs.Registry, room: RoomType, room_id: int, ship: 
         obj.item.new_spare_core(world, ship.zone[pos2])
     elif room.name == "Hangar":
         pos1, pos2 = ship.np_sample(get_area(room_id, ship, indexing="xy"), 2)
-        ship.player = obj.living.new_player(world, ship.zone[pos1])
+        obj.living.new_player(world, ship.zone[pos1])
         obj.robot.new_robot(world, ship.zone[pos2])
     else:
         for xyz in ship.np_sample(get_area(room_id, ship, indexing="xy"), 1):
@@ -291,7 +291,6 @@ class Ship:
     """Ship generator."""
 
     start_position: tuple[int, int, int]
-    player: tcod.ecs.Entity
     room_width = 4
     room_height = 4
 

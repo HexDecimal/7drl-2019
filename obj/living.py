@@ -5,7 +5,7 @@ import tcod.ecs
 import component.actor
 from component.location import Location
 from game.components import Graphic, Interactable, Name
-from game.tags import IsBlocking, IsControllable
+from game.tags import IsBlocking, IsControllable, IsPlayer
 from game.verbs import take_control_interaction
 
 
@@ -36,4 +36,5 @@ def new_player(world: tcod.ecs.Registry, location: Location) -> tcod.ecs.Entity:
     new_entity.components[Name] = "you"
     new_entity.tags.add(IsBlocking)
     new_entity.tags.add(IsControllable)
+    new_entity.tags.add(IsPlayer)
     return new_entity

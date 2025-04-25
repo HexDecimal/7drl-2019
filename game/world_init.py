@@ -18,6 +18,5 @@ def new_world() -> tcod.ecs.Registry:
 
     ship = procgen.shipgen.Ship(world, 1)
     world[None].components[engine.zone.Zone] = ship.zone
-    world[None].components[("player", tcod.ecs.Entity)] = ship.player
 
     return world

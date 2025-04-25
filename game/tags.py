@@ -19,3 +19,6 @@ IsControlled: Final = "IsControlled"
 
 IsActive: Final = "IsActive"
 """Entity is active."""
+
+IsPlayer: Final = "IsPlayer"
+"""Entity is the primary player character."""

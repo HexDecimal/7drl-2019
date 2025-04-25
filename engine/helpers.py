@@ -6,7 +6,7 @@ import tcod.ecs
 
 import engine.zone
 import g
-from game.tags import IsControlled
+from game.tags import IsControlled, IsPlayer
 
 
 def active_zone() -> engine.zone.Zone:
@@ -16,7 +16,8 @@ def active_zone() -> engine.zone.Zone:
 
 def active_player() -> tcod.ecs.Entity:
     """The primary player entity."""
-    return g.world[None].components[("player", tcod.ecs.Entity)]
+    (player,) = g.world.Q.all_of(tags=[IsPlayer])
+    return player
 
 
 def get_controlled_actor() -> tcod.ecs.Entity:
