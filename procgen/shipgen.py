@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import itertools
-import random
 import sys
 from collections.abc import Iterator
+from random import Random
 from typing import Literal
 
 import attrs
@@ -60,22 +60,23 @@ class RoomType:
         return self.name
 
 
-def finalize_room(world: tcod.ecs.Registry, room: RoomType, room_id: int, ship: Ship) -> None:
+def finalize_room(entity: tcod.ecs.Entity, room: RoomType, room_id: int, ship: Ship) -> None:
     """Place items/furniture in room."""
+    world = entity.registry
     if room.name == "Space":
         pass
     elif room.name == "Drive Core":
-        pos1, pos2 = ship.np_sample(get_area(room_id, ship, indexing="xy"), 2)
+        pos1, pos2 = ship.np_sample(entity.components[Random], get_area(room_id, ship, indexing="xy"), 2)
         obj.machine.new_drive_core(world, ship.zone[pos1])
         obj.item.new_spare_core(world, ship.zone[pos2])
     elif room.name == "Hangar":
-        pos1, pos2 = ship.np_sample(get_area(room_id, ship, indexing="xy"), 2)
+        pos1, pos2 = ship.np_sample(entity.components[Random], get_area(room_id, ship, indexing="xy"), 2)
         start_pos = world[object()]
         start_pos.components[Location] = ship.zone[pos1]
         start_pos.tags.add(IsStartPos)
         obj.robot.new_robot(world, ship.zone[pos2])
     else:
-        for xyz in ship.np_sample(get_area(room_id, ship, indexing="xy"), 1):
+        for xyz in ship.np_sample(entity.components[Random], get_area(room_id, ship, indexing="xy"), 1):
             obj.item.new_item(world, ship.zone[xyz])
 
 
@@ -145,7 +146,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
 
     CARDINALS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
-    def __init__(self, world: tcod.ecs.Registry, ship: Ship) -> None:
+    def __init__(self, entity: tcod.ecs.Entity, ship: Ship) -> None:
         """Prepare connecting the rooms of `ship`."""
         self.ship = ship
         self.visited = ship.rooms.T == -1
@@ -153,7 +154,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         super().__init__()
         # Connected rooms: Tuple[axis, index, room_id1, room_id2]
         self.connected: set[tuple[int, int, int, int]] = set()
-        self.world = world
+        self.entity = entity
         self.visit(self.ship.root_node, None)
 
     def grow(self) -> None:
@@ -164,7 +165,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             self.stem = []
             return
         nodes, weights = zip(*neighbors, strict=True)
-        neighbor, stem = self.ship.rng.choices(list(nodes), weights)[0]
+        neighbor, stem = self.entity.components[Random].choices(list(nodes), weights)[0]
         self.visit(neighbor, stem)
         if not list(self.get_neighbors(stem)):
             self.stem.remove(stem)
@@ -178,7 +179,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
 
     def select_stem(self) -> int:
         """Fetch the next node to connect from."""
-        return self.ship.rng.randint(0, len(self.stem) - 1)
+        return self.entity.components[Random].randint(0, len(self.stem) - 1)
 
     def select_neighbor(
         self,
@@ -192,7 +193,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         if not neighbors:
             return None
         nodes, weights = zip(*self.get_neighbors(node), strict=True)
-        return self.ship.rng.choices(list(nodes), weights)[0]  # type: ignore[no-any-return]
+        return self.entity.components[Random].choices(list(nodes), weights)[0]  # type: ignore[no-any-return]
 
     def get_connection(
         self,
@@ -252,21 +253,20 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
         if "--debug" in sys.argv:
             self.connect_rooms_debug(prev, node)
         else:
-            self.connect_rooms(self.world, prev, node)
+            self.connect_rooms(prev, node)
 
     def connect_rooms(
         self,
-        world: tcod.ecs.Registry,
         room_a: tuple[int, int, int],
         room_b: tuple[int, int, int],
     ) -> None:
         door_x = room_b[0] * self.ship.room_width
         door_y = room_b[1] * self.ship.room_height
         if room_a[0] == room_b[0]:
-            door_x += self.ship.rng.randint(1, self.ship.room_width - 1)
+            door_x += self.entity.components[Random].randint(1, self.ship.room_width - 1)
         else:
             assert room_a[1] == room_b[1]
-            door_y += self.ship.rng.randint(1, self.ship.room_height - 1)
+            door_y += self.entity.components[Random].randint(1, self.ship.room_height - 1)
         door = door_x, door_y, room_b[2]
         if self.ship.zone.entity.components[TileData]["walkable"].T[door]:
             return
@@ -274,7 +274,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             self.ship.room_types[self.ship.rooms.T[room_a]],
             self.ship.room_types[self.ship.rooms.T[room_b]],
         ).floor
-        obj.door.new_auto_door(world, self.ship.zone[door])
+        obj.door.new_auto_door(self.entity.registry, self.ship.zone[door])
 
     def connect_rooms_debug(
         self,
@@ -296,31 +296,25 @@ class Ship:
     room_width = 4
     room_height = 4
 
-    def __init__(self, seed: int | None = None) -> None:
-        """Generate a new ship."""
-        if seed is None:
-            seed = random.getrandbits(64)
-        self.rng = random.Random(seed)
+    rng: None
 
-    def np_sample(self, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
+    def np_sample(self, rng: Random, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
         """Return `k` random True indexes from a boolean `array`."""
         if not np.any(array):
             return []  # This should be removed, will silently ignore bad data
         assert len(array.shape) == 3  # noqa: PLR2004
         where: list[list[int]] = np.argwhere(array).tolist()  # type: ignore[assignment]
-        return [(x, y, z) for x, y, z in self.rng.sample(where, k)]
+        return [(x, y, z) for x, y, z in rng.sample(where, k)]
 
-    def generate(
-        self,
-        world: tcod.ecs.Registry,
-    ) -> tcod.ecs.Entity:
+    def generate(self, world: tcod.ecs.Registry) -> tcod.ecs.Entity:
         """Perform all ship generation.."""
         entity = world[None]
+        rng = entity.components[Random] = world[None].components[Random]
 
         self.length = 64
         self.half_width = 8
         self.depth = 1
-        self.width = self.half_width * 2 + self.rng.randint(0, 1)
+        self.width = self.half_width * 2 + rng.randint(0, 1)
         self.zone = engine.zone.Zone(
             entity, (self.depth, self.width * self.room_height + 1, self.length * self.room_width + 1)
         )
@@ -334,8 +328,8 @@ class Ship:
             1: r_corridor,
         }
         self.next_room_id = 2
-        self.gen_form()
-        self.gen_halls()
+        self.gen_form(entity)
+        self.gen_halls(entity)
         vital_rooms = (
             r_hangar,
             r_drive_core,
@@ -344,23 +338,24 @@ class Ship:
             r_bridge,
         )
         for room_type in vital_rooms:
-            self.add_new_room(room_type, 0)
+            self.add_new_room(entity, room_type, 0)
         try:
             while True:
-                self.add_new_room(RoomType())
+                self.add_new_room(entity, RoomType())
         except NoRoomError:
             pass
         self.rooms[self.rooms == 0] = 1
 
-        self.finalize(world)
+        self.finalize(entity)
         return entity
 
-    def gen_form(self) -> None:
+    def gen_form(self, entity: tcod.ecs.Entity) -> None:
         """Generate the ship hull shape."""
+        rng = entity.components[Random]
         x = 0
         while x < self.length:
-            xx = x + self.rng.randint(1, self.width)
-            self.form[:, x:xx] = self.rng.randint(0, int(self.half_width // 1.5))
+            xx = x + rng.randint(1, self.width)
+            self.form[:, x:xx] = rng.randint(0, int(self.half_width // 1.5))
             x = xx
 
         for x in range(self.length):
@@ -369,24 +364,25 @@ class Ship:
             self.rooms.T[x, : self.form[0, x], 0] = -1
             self.rooms.T[x, -self.form[0, x] :, 0] = -1
 
-    def gen_halls(self) -> None:
+    def gen_halls(self, entity: tcod.ecs.Entity) -> None:
         """Place hallways along ship."""
-        start_x = self.rng.randint(0, self.length // 4)
-        end_x = self.rooms.T.shape[0] - self.rng.randint(0, self.length // 4)
+        rng = entity.components[Random]
+        start_x = rng.randint(0, self.length // 4)
+        end_x = self.rooms.T.shape[0] - rng.randint(0, self.length // 4)
         self.rooms.T[start_x:end_x, self.half_width, 0] = 1
         self.root_node = start_x, self.half_width, 0
 
-    def add_new_room(self, room: RoomType, floor: int = 0) -> None:  # noqa: ARG002
+    def add_new_room(self, entity: tcod.ecs.Entity, room: RoomType, floor: int = 0) -> None:  # noqa: ARG002
         sizes = list(
             itertools.product(
                 range(room.min_size[0], room.max_size[0] + 1),
                 range(room.min_size[1], room.max_size[1] + 1),
             ),
         )
-        self.rng.shuffle(sizes)
+        entity.components[Random].shuffle(sizes)
         for size in sizes:
             try:
-                self.rooms.T[self.get_free_space(size, 0)] = self.next_room_id
+                self.rooms.T[self.get_free_space(entity, size, 0)] = self.next_room_id
                 break
             except NoRoomError:
                 pass
@@ -396,7 +392,7 @@ class Ship:
         self.room_types[self.next_room_id] = room
         self.next_room_id += 1
 
-    def get_free_space(self, size: tuple[int, int], floor: int) -> tuple[slice, slice]:
+    def get_free_space(self, entity: tcod.ecs.Entity, size: tuple[int, int], floor: int) -> tuple[slice, slice]:
         """Return the slice indexes of a an unclaimed area."""
         width, height = size
         room_area = np.ones((width, height), dtype=bool)
@@ -410,13 +406,13 @@ class Ship:
         if not valid_where.size:
             msg = "No space left for room."
             raise NoRoomError(msg)
-        x, y = self.rng.choice(valid_where)
+        x, y = entity.components[Random].choice(valid_where)
         assert (self.rooms.T[x : x + width, y : y + height, floor] == 0).all()
         return slice(x, x + width), slice(y, y + height)
 
-    def get_unclaimed_cell(self) -> tuple[int, int]:
+    def get_unclaimed_cell(self, entity: tcod.ecs.Entity) -> tuple[int, int]:
         where = np.argwhere(self.get_unclaimed_cells())
-        i = self.rng.randint(0, len(where) - 1)
+        i = entity.components[Random].randint(0, len(where) - 1)
         return int(where[i][0]), int(where[i][1])
 
     def get_unclaimed_cells(self) -> NDArray[np.bool_]:
@@ -433,7 +429,7 @@ class Ship:
         )
         return (neighbors != 0) & free  # type: ignore[no-any-return]
 
-    def finalize(self, world: tcod.ecs.Registry) -> None:  # noqa: C901
+    def finalize(self, entity: tcod.ecs.Entity) -> None:  # noqa: C901
         """Perform generation steps after room placement."""
 
         def get_room_type(cx: int, cy: int, cz: int) -> RoomType:
@@ -481,10 +477,10 @@ class Ship:
         )
         self.zone.room_types = self.room_types
 
-        ShipRoomConnector(world, self).generate()
+        ShipRoomConnector(entity, self).generate()
 
         for room_id, room in self.room_types.items():
-            finalize_room(world, room, room_id, self)
+            finalize_room(entity, room, room_id, self)
 
     def show(self) -> str:
         """Return debug output."""
