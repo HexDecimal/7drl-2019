@@ -4,13 +4,11 @@ import tcod.console
 import tcod.ecs
 
 from component.location import Location
-from engine.zone import Zone
 from game.components import Graphic, Shape3D, TileData
 
 
 def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
     """Render a zone to a console."""
-    zone = entity.components[Zone]
     console.clear()
     cam_x, cam_y, cam_z = entity.registry["camera"].components[Location].xyz
     cam_x -= console.width // 2
@@ -25,7 +23,7 @@ def render_zone(entity: tcod.ecs.Entity, console: tcod.console.Console) -> None:
 
     con_view = (slice(cam_left - cam_x, cam_right - cam_x), slice(cam_top - cam_y, cam_bottom - cam_y))
 
-    tile = zone.entity.components[TileData].T[cam_left:cam_right, cam_top:cam_bottom, cam_z]
+    tile = entity.components[TileData].T[cam_left:cam_right, cam_top:cam_bottom, cam_z]
 
     console.rgb.T[con_view] = tile[["ch", "fg", "bg"]]
 

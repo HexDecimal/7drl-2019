@@ -10,6 +10,7 @@ import g
 import game.actions
 from component.location import Location
 from engine.helpers import active_player, active_zone, get_controlled_actor
+from engine.zone import Zone
 from game.action_logic import do_action, simulate
 from game.components import MessageLog, RoomIDArray
 from game.rendering import render_zone
@@ -67,7 +68,7 @@ class InGame(State):
 
     def on_draw(self, console: tcod.console.Console) -> None:
         """Normal rendering."""
-        render_zone(g.world[None], console)
+        render_zone(active_zone(), console)
         self.draw_ui()
 
     def draw_ui(self) -> None:
@@ -78,8 +79,9 @@ class InGame(State):
         ui_console.draw_rect(0, ui_console.height - 1, 1, 1, ch=ord("└"))
         ui_console.print(1, 0, f"Time: {g.world[None].components[TurnQueue_].time}")
         ui_console.print(1, 1, f"Pos: {active_player().components[Location].xyz}")
-        room_name = active_zone().room_types[
-            active_zone().entity.components[RoomIDArray].T[active_player().components[Location].xyz]
+        zone = active_zone()
+        room_name = zone.components[Zone].room_types[
+            zone.components[RoomIDArray].T[active_player().components[Location].xyz]
         ]
         ui_console.print(1, 2, f"{room_name}")
 

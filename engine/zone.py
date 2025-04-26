@@ -18,6 +18,7 @@ class Zone:
 
     def __init__(self, entity: tcod.ecs.Entity, shape: tuple[int, int, int]) -> None:
         self.entity = entity
+        entity.components[Zone] = self
         entity.components[Shape3D] = shape
 
         entity.components[TileData] = tiles_ = np.zeros(shape, dtype=tiles.DTYPE)

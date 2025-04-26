@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import tcod.ecs
 
-import engine.zone
 import g
-from game.tags import IsControlled, IsPlayer
+from game.tags import IsControlled, IsIn, IsPlayer
 
 
-def active_zone() -> engine.zone.Zone:
+def active_zone() -> tcod.ecs.Entity:
     """Return the active zone."""
-    return g.world[None].components[engine.zone.Zone]
+    return g.world["camera"].relation_tag[IsIn]
 
 
 def active_player() -> tcod.ecs.Entity:

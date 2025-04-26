@@ -308,7 +308,7 @@ class Ship:
 
     def generate(self, world: tcod.ecs.Registry) -> tcod.ecs.Entity:
         """Perform all ship generation.."""
-        entity = world[None]
+        entity = world[object()]
         rng = entity.components[Random] = world[None].components[Random]
 
         self.length = 64
