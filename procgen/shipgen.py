@@ -35,10 +35,10 @@ class NoRoomError(ProcGenError):
     """A required room can not be placed or found."""
 
 
-def get_area(room_id: int, ship: Ship, *, indexing: Literal["xy", "ij"]) -> NDArray[np.bool_]:
+def get_area(entity: tcod.ecs.Entity, room_id: int, *, indexing: Literal["xy", "ij"]) -> NDArray[np.bool_]:
     """Return the available floor of a room."""
-    area: NDArray[np.bool_] = ship.zone.entity.components[RoomIDArray] == room_id
-    area &= ship.zone.entity.components[TileData]["walkable"] != 0
+    area: NDArray[np.bool_] = entity.components[RoomIDArray] == room_id
+    area &= entity.components[TileData]["walkable"] != 0
     if indexing == "xy":
         return area.T
     return area
@@ -60,24 +60,33 @@ class RoomType:
         return self.name
 
 
-def finalize_room(entity: tcod.ecs.Entity, room: RoomType, room_id: int, ship: Ship) -> None:
+def np_sample(rng: Random, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
+    """Return `k` random True indexes from a boolean `array`."""
+    if not np.any(array):
+        return []  # This should be removed, will silently ignore bad data
+    assert len(array.shape) == 3  # noqa: PLR2004
+    where: list[list[int]] = np.argwhere(array).tolist()  # type: ignore[assignment]
+    return [(x, y, z) for x, y, z in rng.sample(where, k)]
+
+
+def finalize_room(entity: tcod.ecs.Entity, room: RoomType, room_id: int) -> None:
     """Place items/furniture in room."""
     world = entity.registry
     if room.name == "Space":
         pass
     elif room.name == "Drive Core":
-        pos1, pos2 = ship.np_sample(entity.components[Random], get_area(room_id, ship, indexing="xy"), 2)
-        obj.machine.new_drive_core(world, ship.zone[pos1])
-        obj.item.new_spare_core(world, ship.zone[pos2])
+        pos1, pos2 = np_sample(entity.components[Random], get_area(entity, room_id, indexing="xy"), 2)
+        obj.machine.new_drive_core(world, Location(*pos1, entity))
+        obj.item.new_spare_core(world, Location(*pos2, entity))
     elif room.name == "Hangar":
-        pos1, pos2 = ship.np_sample(entity.components[Random], get_area(room_id, ship, indexing="xy"), 2)
+        pos1, pos2 = np_sample(entity.components[Random], get_area(entity, room_id, indexing="xy"), 2)
         start_pos = world[object()]
-        start_pos.components[Location] = ship.zone[pos1]
+        start_pos.components[Location] = Location(*pos1, entity)
         start_pos.tags.add(IsStartPos)
-        obj.robot.new_robot(world, ship.zone[pos2])
+        obj.robot.new_robot(world, Location(*pos2, entity))
     else:
-        for xyz in ship.np_sample(entity.components[Random], get_area(room_id, ship, indexing="xy"), 1):
-            obj.item.new_item(world, ship.zone[xyz])
+        for xyz in np_sample(entity.components[Random], get_area(entity, room_id, indexing="xy"), 1):
+            obj.item.new_item(world, Location(*xyz, entity))
 
 
 r_undefined = RoomType()
@@ -268,13 +277,13 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             assert room_a[1] == room_b[1]
             door_y += self.entity.components[Random].randint(1, self.ship.room_height - 1)
         door = door_x, door_y, room_b[2]
-        if self.ship.zone.entity.components[TileData]["walkable"].T[door]:
+        if self.entity.components[TileData]["walkable"].T[door]:
             return
-        self.ship.zone.entity.components[TileData].T[door] = max(
+        self.entity.components[TileData].T[door] = max(
             self.ship.room_types[self.ship.rooms.T[room_a]],
             self.ship.room_types[self.ship.rooms.T[room_b]],
         ).floor
-        obj.door.new_auto_door(self.entity.registry, self.ship.zone[door])
+        obj.door.new_auto_door(self.entity.registry, Location(*door, self.entity))
 
     def connect_rooms_debug(
         self,
@@ -287,7 +296,7 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
             room_b[0] * self.ship.room_width + 2,
             room_b[1] * self.ship.room_height + 2,
         )
-        self.ship.zone.entity.components[TileData].T[line] = tiles.metal_floor._replace(bg=(0, 255, 0))
+        self.entity.components[TileData].T[line] = tiles.metal_floor._replace(bg=(0, 255, 0))
 
 
 class Ship:
@@ -300,24 +309,15 @@ class Ship:
     ship_half_width = 8
     ship_depth = 1
 
-    def np_sample(self, rng: Random, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
-        """Return `k` random True indexes from a boolean `array`."""
-        if not np.any(array):
-            return []  # This should be removed, will silently ignore bad data
-        assert len(array.shape) == 3  # noqa: PLR2004
-        where: list[list[int]] = np.argwhere(array).tolist()  # type: ignore[assignment]
-        return [(x, y, z) for x, y, z in rng.sample(where, k)]
-
     def generate(self, world: tcod.ecs.Registry) -> tcod.ecs.Entity:
         """Perform all ship generation.."""
         entity = world[object()]
         rng = entity.components[Random] = world[None].components[Random]
 
         self.ship_width = self.ship_half_width * 2 + rng.randint(0, 1)
-        self.zone = engine.zone.Zone(
+        entity.components[engine.zone.Zone] = engine.zone.Zone(
             entity, (self.ship_depth, self.ship_width * self.room_height + 1, self.ship_length * self.room_width + 1)
         )
-        world[None].components[engine.zone.Zone] = self.zone
 
         self.form = np.zeros((self.ship_depth, self.ship_length), dtype=int)
         self.rooms = np.zeros((self.ship_depth, self.ship_width, self.ship_length), dtype=int)
@@ -465,21 +465,21 @@ class Ship:
             top_tile = get_merge_tile(room_type, top_type)
             top_left_tile = get_merge_tile(room_type, left_type, top_type, top_left_type)
 
-            self.zone.entity.components[TileData].T[left, top, cz] = top_left_tile
-            self.zone.entity.components[TileData].T[left + 1 : right, top, cz] = top_tile
-            self.zone.entity.components[TileData].T[left, top + 1 : bottom, cz] = left_tile
-            self.zone.entity.components[TileData].T[left + 1 : right, top + 1 : bottom, cz] = room_type.floor
+            entity.components[TileData].T[left, top, cz] = top_left_tile
+            entity.components[TileData].T[left + 1 : right, top, cz] = top_tile
+            entity.components[TileData].T[left, top + 1 : bottom, cz] = left_tile
+            entity.components[TileData].T[left + 1 : right, top + 1 : bottom, cz] = room_type.floor
 
-        self.zone.entity.components[RoomIDArray][:] = -1
-        self.zone.entity.components[RoomIDArray].T[:-1, :-1, :] = np.kron(
+        entity.components[RoomIDArray][:] = -1
+        entity.components[RoomIDArray].T[:-1, :-1, :] = np.kron(
             self.rooms.T, np.ones((self.room_width, self.room_height, 1))
         )
-        self.zone.room_types = self.room_types
+        entity.components[engine.zone.Zone].room_types = self.room_types
 
         ShipRoomConnector(entity, self).generate()
 
         for room_id, room in self.room_types.items():
-            finalize_room(entity, room, room_id, self)
+            finalize_room(entity, room, room_id)
 
     def show(self) -> str:
         """Return debug output."""
