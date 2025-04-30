@@ -293,10 +293,12 @@ class ShipRoomConnector(AbstractGrowingTree[tuple[int, int, int]]):
 class Ship:
     """Ship generator."""
 
-    room_width = 4
-    room_height = 4
+    room_width = 3
+    room_height = 3
 
-    rng: None
+    ship_length = 32
+    ship_half_width = 8
+    ship_depth = 1
 
     def np_sample(self, rng: Random, array: NDArray[np.bool], k: int) -> list[tuple[int, int, int]]:
         """Return `k` random True indexes from a boolean `array`."""
@@ -311,17 +313,14 @@ class Ship:
         entity = world[object()]
         rng = entity.components[Random] = world[None].components[Random]
 
-        self.length = 64
-        self.half_width = 8
-        self.depth = 1
-        self.width = self.half_width * 2 + rng.randint(0, 1)
+        self.ship_width = self.ship_half_width * 2 + rng.randint(0, 1)
         self.zone = engine.zone.Zone(
-            entity, (self.depth, self.width * self.room_height + 1, self.length * self.room_width + 1)
+            entity, (self.ship_depth, self.ship_width * self.room_height + 1, self.ship_length * self.room_width + 1)
         )
         world[None].components[engine.zone.Zone] = self.zone
 
-        self.form = np.zeros((self.depth, self.length), dtype=int)
-        self.rooms = np.zeros((self.depth, self.width, self.length), dtype=int)
+        self.form = np.zeros((self.ship_depth, self.ship_length), dtype=int)
+        self.rooms = np.zeros((self.ship_depth, self.ship_width, self.ship_length), dtype=int)
         self.room_types = {
             -1: r_space,
             0: r_undefined,
@@ -353,12 +352,12 @@ class Ship:
         """Generate the ship hull shape."""
         rng = entity.components[Random]
         x = 0
-        while x < self.length:
-            xx = x + rng.randint(1, self.width)
-            self.form[:, x:xx] = rng.randint(0, int(self.half_width // 1.5))
+        while x < self.ship_length:
+            xx = x + rng.randint(1, self.ship_width)
+            self.form[:, x:xx] = rng.randint(0, int(self.ship_half_width // 1.5))
             x = xx
 
-        for x in range(self.length):
+        for x in range(self.ship_length):
             if self.form[0, x] == 0:
                 continue
             self.rooms.T[x, : self.form[0, x], 0] = -1
@@ -367,10 +366,10 @@ class Ship:
     def gen_halls(self, entity: tcod.ecs.Entity) -> None:
         """Place hallways along ship."""
         rng = entity.components[Random]
-        start_x = rng.randint(0, self.length // 4)
-        end_x = self.rooms.T.shape[0] - rng.randint(0, self.length // 4)
-        self.rooms.T[start_x:end_x, self.half_width, 0] = 1
-        self.root_node = start_x, self.half_width, 0
+        start_x = rng.randint(0, self.ship_length // 4)
+        end_x = self.rooms.T.shape[0] - rng.randint(0, self.ship_length // 4)
+        self.rooms.T[start_x:end_x, self.ship_half_width, 0] = 1
+        self.root_node = start_x, self.ship_half_width, 0
 
     def add_new_room(self, entity: tcod.ecs.Entity, room: RoomType, floor: int = 0) -> None:  # noqa: ARG002
         sizes = list(
@@ -490,4 +489,4 @@ class Ship:
                 return " "
             return f"""{self.rooms.T[x, y, 0] % 10:i}"""
 
-        return "\n".join("".join(icon(x, y) for x in range(self.length)) for y in range(self.width))
+        return "\n".join("".join(icon(x, y) for x in range(self.ship_length)) for y in range(self.ship_width))

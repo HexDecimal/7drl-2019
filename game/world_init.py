@@ -30,7 +30,7 @@ def init_world(world: tcod.ecs.Registry) -> None:
 def new_world() -> tcod.ecs.Registry:
     """Return a new world."""
     world = tcod.ecs.Registry()
-    world[None].components[Random] = Random(1)
+    world[None].components[Random] = Random()
     world[None].components[MessageLog] = []
     world[None].components[TurnQueue_] = TurnQueue_()
 
