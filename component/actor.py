@@ -11,6 +11,7 @@ from engine.helpers import active_zone
 
 if TYPE_CHECKING:
     import tqueue.tqueue
+
     from game.action import Action
 
 
